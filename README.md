@@ -1,6 +1,6 @@
 # vuics-vui-react
 
-> Vuics VUI React.js Component
+> Vuics React.js Component for Voice User Interface integration
 
 [![NPM](https://img.shields.io/npm/v/@vuics/vui-react.svg)](https://www.npmjs.com/package/@vuics/vui-react) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 

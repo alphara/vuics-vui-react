@@ -12,7 +12,7 @@ npm i @vuics/vui-react
 
 Additionally, you may need to install the following packages:
 ```
-npm i prop-types react react-dom react-scripts aws-sdk webworkify-webpack
+npm i prop-types react react-dom react-scripts webworkify-webpack
 ```
 
 ## Usage

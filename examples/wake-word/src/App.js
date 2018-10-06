@@ -1,10 +1,12 @@
-import React, { Component } from 'react'
+import React, {
+  Component
+} from 'react'
 
 import {
   Vuics,
   initVuics,
   ButtonDefault,
-  Analyzer,
+  Oscilloscope,
   Consumer,
   speak,
   listen,
@@ -95,17 +97,15 @@ export default class App extends Component {
 
           <Consumer>
             {
-              ({ buttonRef, onClick, disabled, children, state, message }) => {
+              ({ buttonRef, onClick, state, message }) => {
                 savedOnClick = onClick
                 return (
                   <Button
                     className='button'
-                    // onClick={onClick}
                     onClick={wakeUp}
                     ref={buttonRef}
                     size='huge'
                     color='green'
-                    disabled={state !== 'Passive'}
                   >
                     {
                       state === 'Passive'
@@ -121,38 +121,12 @@ export default class App extends Component {
               }
             }
           </Consumer>
-          {/*
-          <Consumer>
-            {
-              ({ buttonRef, onClick, disabled, children, state, message }) => (
-                <Button
-                  className='button'
-                  onClick={onClick}
-                  ref={buttonRef}
-                  size='huge'
-                  color='green'
-                  disabled={state !== 'Passive'}
-                >
-                  {
-                    state === 'Passive'
-                      ? 'Click to Speak 🎙️ =>'
-                      : state === 'Listening'
-                        ? '🎤 Say a Phrase (e.g. "Help me")'
-                        : state === 'Sending'
-                          ? <Loader active inline='centered' />
-                          : '🔊' + message
-                  }
-                </Button>
-              )
-            }
-          </Consumer>
-          */}
 
-          <Analyzer
-            canvasWrapperClassName='canvasWrapper'
-            canvasClassName='canvas'
-          />
-        </Vuics>
+        <Oscilloscope
+          canvasWrapperClassName='canvasWrapper'
+          canvasClassName='canvas'
+        />
+      </Vuics>
 
       </div>
     )

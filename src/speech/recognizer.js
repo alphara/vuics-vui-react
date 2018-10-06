@@ -38,7 +38,25 @@ const factory = (root) =>  {
   // Check browser support
   // This is done as early as possible, to make it as fast as possible for unsupported browsers
   if (!SpeechRecognition) {
-    return null;
+    console.error('The browser does not support speech recognition')
+    // return null;
+    return {
+      init: () => {},
+      start: () => {},
+      abort: () => {},
+      pause: () => {},
+      resume: () => {},
+      debug: () => {},
+      debug: () => {},
+      setLanguage: () => {},
+      addCommands: () => {},
+      removeCommands: () => {},
+      addCallback: () => {},
+      removeCallback: () => {},
+      isListening: () => {},
+      getSpeechRecognizer: () => {},
+      trigger: () => {},
+    }
   }
 
   var commandsList = [];

@@ -1,10 +1,12 @@
-import React, { Component } from 'react'
+import React, {
+  Component
+} from 'react'
 
 import {
   Vuics,
   initVuics,
   ButtonDefault,
-  Analyzer,
+  Oscillograph,
   Consumer
 } from '@vuics/vui-react'
 
@@ -23,52 +25,49 @@ export default class App extends Component {
     console.log('intentName:', data.intentName)
   }
 
-  render = () => {
-    return (
-      <div>
-        <Vuics
-          vuicsVuiId='VuicsHome'
-          onConversationData={this.onData}
-          fillStyle='rgb(27,28,29)'
-          lineWidth={2}
-          strokeStyle='rgb(33,186,70)'
-        >
-          <ButtonDefault
-            className='button'
-          />
+  render = () => (
+    <div>
+      <Vuics
+        vuicsVuiId='VuicsHome'
+        onConversationData={this.onData}
+        fillStyle='rgb(27,28,29)'
+        lineWidth={2}
+        strokeStyle='rgb(33,186,70)'
+      >
+        <ButtonDefault
+          className='button'
+        />
 
-          <Consumer>
-            {
-              ({ buttonRef, onClick, disabled, children, state, message }) => (
-                <Button
-                  className='button'
-                  onClick={onClick}
-                  ref={buttonRef}
-                  size='huge'
-                  color='green'
-                  disabled={state !== 'Passive'}
-                >
-                  {
-                    state === 'Passive'
-                      ? 'Click to Speak 🎙️ =>'
-                      : state === 'Listening'
-                        ? '🎤 Say a Phrase (e.g. "Help me")'
-                        : state === 'Sending'
-                          ? <Loader active inline='centered' />
-                          : '🔊' + message
-                  }
-                </Button>
-              )
-            }
-          </Consumer>
+        <Consumer>
+          {
+            ({ buttonRef, onClick, state, message }) => (
+              <Button
+                className='button'
+                onClick={onClick}
+                ref={buttonRef}
+                size='huge'
+                color='green'
+              >
+                {
+                  state === 'Passive'
+                    ? 'Click to Speak 🎙️ =>'
+                    : state === 'Listening'
+                      ? '🎤 Say a Phrase (e.g. "Help me")'
+                      : state === 'Sending'
+                        ? <Loader active inline='centered' />
+                        : '🔊' + message
+                }
+              </Button>
+            )
+          }
+        </Consumer>
 
-          <Analyzer
-            canvasWrapperClassName='canvasWrapper'
-            canvasClassName='canvas'
-          />
-        </Vuics>
+        <Oscillograph
+          canvasWrapperClassName='canvasWrapper'
+          canvasClassName='canvas'
+        />
+      </Vuics>
 
-      </div>
-    )
-  }
+    </div>
+  )
 }

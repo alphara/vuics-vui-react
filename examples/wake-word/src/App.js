@@ -29,38 +29,51 @@ export default class App extends Component {
   onData = data => {
     console.log('intentName:', data.intentName)
     listen.resume();
+    this.setState({ listening: true });
   }
+
+  state = {
+    listening: false,
+  };
 
   componentDidMount = () => {
     const onWakeWord = () => {
       // speak({ phrase: 'Hello! I am Voice User Interface!' })
       speak({ phrase: 'Listening' });
       wakeUp();
-      listen.pause();
+      // listen.pause();
+      listen.abort();
+      this.setState({ listening: false });
     }
 
-    // const onBye = () => {
-    //   speak({ phrase: 'Talk to you soon' });
-    // }
+    const onBye = () => {
+      speak({ phrase: 'Talk to you soon' });
+    }
 
-    // const onHowAreYou = () => speak({ phrase: 'I am fine. Thank you!' });
+    const onHowAreYou = () => speak({ phrase: 'I am fine. Thank you!' });
 
     listen.addCommands({
       'Hello Voice': onWakeWord,
+      'Hey Voice': onWakeWord,
+      'Hello Vuics': onWakeWord,
+      'Hey Vuics': onWakeWord,
       'Hello Voice Interface': onWakeWord,
+      'Hey Voice Interface': onWakeWord,
       'Hello Voice User Interface': onWakeWord,
+      'Hey Voice User Interface': onWakeWord,
       'Click to Speak': onWakeWord,
-      // 'How are you': onHowAreYou,
-      // 'How are you doing': onHowAreYou,
-      // 'Whats up': onHowAreYou,
-      // 'Goodbye': onBye,
-      // 'Bye': onBye,
-      // 'See you': onBye,
-      // 'Talk to you later': onBye,
-      // 'Talk to you soon': onBye
+
+      'How are you': onHowAreYou,
+      'How are you doing': onHowAreYou,
+      'Whats up': onHowAreYou,
+      'Goodbye': onBye,
+      'Bye': onBye,
+      'See you': onBye,
+      'Talk to you later': onBye,
+      'Talk to you soon': onBye
     });
-    // listen.start({ paused: true });
     listen.start();
+    this.setState({ listening: true });
   }
 
   render = () => {
@@ -72,16 +85,21 @@ export default class App extends Component {
           Speak
         </Button>
         <Button onClick={() => {
-          console.log('Resume listening');
-          listen.resume();
+          if (this.state.listening) {
+            console.log('Stop wake-word listening');
+            listen.abort();
+            this.setState({ listening: false });
+          } else {
+            console.log('Resume wake-word listening');
+            listen.resume();
+            this.setState({ listening: true });
+          }
         }} color='yellow'>
-          Resume listening
-        </Button>
-        <Button onClick={() => {
-          console.log('Stop listening');
-          listen.abort();
-        }} color='yellow'>
-          Stop listening
+          {
+            this.state.listening ?
+              'Stop wake-word listening' :
+              'Resume wake-word listening'
+          }
         </Button>
 
         <Vuics
@@ -122,12 +140,11 @@ export default class App extends Component {
             }
           </Consumer>
 
-        <Oscilloscope
-          canvasWrapperClassName='canvasWrapper'
-          canvasClassName='canvas'
-        />
-      </Vuics>
-
+          <Oscilloscope
+            canvasWrapperClassName='canvasWrapper'
+            canvasClassName='canvas'
+          />
+        </Vuics>
       </div>
     )
   }

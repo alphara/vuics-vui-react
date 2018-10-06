@@ -5,7 +5,7 @@ import {
   Consumer
 } from './provider'
 
-class Oscillograph extends Component {
+class Oscilloscope extends Component {
   static propTypes = {
     canvasWrapperClassName: PropTypes.string.isRequired,
     canvasClassName: PropTypes.string.isRequired
@@ -37,4 +37,4 @@ class Oscillograph extends Component {
   )
 }
 
-export default Oscillograph
+export default Oscilloscope

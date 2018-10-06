@@ -10,8 +10,8 @@ export {
 } from './button'
 
 export {
-  default as Oscillograph
-} from './oscilograph'
+  default as Oscilloscope
+} from './oscilloscope'
 
 export const initVuics = ({ apiKey, apiUrl }) => {
   console.log('init')

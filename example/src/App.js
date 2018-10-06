@@ -6,7 +6,7 @@ import {
   Vuics,
   initVuics,
   ButtonDefault,
-  Oscillograph,
+  Oscilloscope,
   Consumer
 } from '@vuics/vui-react'
 
@@ -62,7 +62,7 @@ export default class App extends Component {
           }
         </Consumer>
 
-        <Oscillograph
+        <Oscilloscope
           canvasWrapperClassName='canvasWrapper'
           canvasClassName='canvas'
         />

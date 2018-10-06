@@ -5,9 +5,7 @@ import {
   initVuics,
   ButtonDefault,
   Analyzer,
-  Consumer,
-  speak,
-  listen
+  Consumer
 } from '@vuics/vui-react'
 
 import {
@@ -28,21 +26,6 @@ export default class App extends Component {
   render = () => {
     return (
       <div>
-        <Button onClick={() => {
-          speak({ phrase: 'Hello!   I am your Voice User Interface.'})
-        }} color='yellow'>
-          Speak
-        </Button>
-        <Button onClick={() => {
-          listen({
-            phrases: ['voice user interface', 'VUI', 'Vuics'],
-            onResult: ({ transcript, confidence }) => { console.log('transcript:', transcript, ', confidence:', confidence); },
-            onError: (error) => { console.error('Listen error:', error) }
-          })
-        }} color='yellow'>
-          Listen
-        </Button>
-
         <Vuics
           vuicsVuiId='VuicsHome'
           onConversationData={this.onData}

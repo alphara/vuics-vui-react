@@ -1,11 +1,11 @@
 {
-  "name": "vuics-vui-react-example",
+  "name": "vuics-vui-wake-word-example",
   "homepage": "https://alphara.github.io/vuics-vui-react",
   "version": "0.0.1",
   "license": "ISC",
   "private": true,
   "dependencies": {
-    "@vuics/vui-react": "file:..",
+    "@vuics/vui-react": "file:../..",
     "ajv": "^6.5.4",
     "axios": "^0.18.0",
     "prop-types": "^15.6.2",

@@ -80,6 +80,6 @@
   ],
   "dependencies": {},
   "directories": {
-    "example": "example"
+    "example": "examples"
   }
 }

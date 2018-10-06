@@ -13,6 +13,14 @@ export {
   default as Analyzer
 } from './analyzer'
 
+export {
+  default as speak
+} from './speech/synthesizer'
+
+export {
+  default as listen
+} from './speech/recognizer'
+
 export const initVuics = ({ apiKey, apiUrl }) => {
   console.log('init')
   if (apiKey) {

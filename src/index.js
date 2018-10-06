@@ -10,8 +10,8 @@ export {
 } from './button'
 
 export {
-  default as Analyzer
-} from './analyzer'
+  default as Oscilloscope
+} from './oscilloscope'
 
 export {
   default as speak

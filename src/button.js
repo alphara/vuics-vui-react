@@ -8,14 +8,13 @@ import {
 const ButtonDefault = ({ className }) => (
   <Consumer>
     {
-      ({ buttonRef, onClick, disabled, children, state, message }) => (
+      ({ buttonRef, onClick, children, state, message }) => (
         <button
           ref={buttonRef}
           type='button'
           tabIndex='0'
           onClick={onClick}
           className={className}
-          disabled={disabled}
         >
           {message}
         </button>

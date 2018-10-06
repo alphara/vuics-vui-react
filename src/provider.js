@@ -71,27 +71,16 @@ export default class Vuics extends Component {
     )
   };
 
-  clearCanvas = () => {
-
-  };
-
-  prepCanvas = () => {
-    this.setState(
-      () => ({
-        listening: true
-      })
-    )
-  };
-
   visualizeAudioBuffer = (dataArray, bufferLength) => {
     var animationId
 
-    this.canvasCtx.clearRect(
-      0,
-      0,
-      this.canvasRef.current.clientWidth,
-      this.canvasRef.current.clientHeight
-    )
+    this.canvasCtx
+      .clearRect(
+        0,
+        0,
+        this.canvasRef.current.clientWidth,
+        this.canvasRef.current.clientHeight
+      )
 
     const draw = () => {
       if (!this.state.listening) {
@@ -158,13 +147,56 @@ export default class Vuics extends Component {
     }
 
     if (state === 'Sending') {
-      this.canvasCtx.clearRect(
-        0,
-        0,
-        this.canvasRef.current.width,
-        this.canvasRef.height
+      this.setState(
+        () => ({
+          state,
+          listening: false
+        })
       )
 
+      this.canvasCtx
+        .fillRect(
+          0,
+          0,
+          this.canvasRef.current.clientWidth,
+          this.canvasRef.current.clientHeight
+        )
+
+      this.canvasCtx
+        .clearRect(
+          0,
+          0,
+          this.canvasRef.current.clientWidth,
+          this.canvasRef.current.clientHeight
+        )
+    }
+
+    if (state === 'Passive') {
+      this.setState(
+        () => ({
+          state,
+          listening: false
+        })
+      )
+
+      this.canvasCtx
+        .fillRect(
+          0,
+          0,
+          this.canvasRef.current.clientWidth,
+          this.canvasRef.current.clientHeight
+        )
+
+      this.canvasCtx
+        .clearRect(
+          0,
+          0,
+          this.canvasRef.current.clientWidth,
+          this.canvasRef.current.clientHeight
+        )
+    }
+
+    if (state === 'Speaking') {
       this.setState(
         () => ({
           state,
@@ -172,12 +204,6 @@ export default class Vuics extends Component {
         })
       )
     }
-
-    this.setState(
-      () => ({
-        state
-      })
-    )
   }
 
   onData = data => {
@@ -200,7 +226,13 @@ export default class Vuics extends Component {
   }
 
   onClick = () => {
-    if (this.state.state === 'Listening') {
+    if (
+      this.state.state === 'Listening' ||
+      this.state.state === 'Sending' ||
+      this.state.state === 'Speaking'
+    ) {
+      console.log('this.state.state: ', this.state.state)
+      this.conversation.stopRecord()
       return
     }
 

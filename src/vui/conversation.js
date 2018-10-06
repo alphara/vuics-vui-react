@@ -17,14 +17,17 @@ const audioControl = new AudioControl({ checkAudioSupport: false });
 
 const bufferToArrayBuffer = (buffer) => {
   const ab = new ArrayBuffer(buffer.data.length);
+
   const view = new Uint8Array(ab);
+
   for (let i = 0; i < buffer.data.length; ++i) {
     view[i] = buffer.data[i];
   }
+
   return ab;
 }
 
-const Conversation = function (config, onStateChange, onSuccess, onError, onAudioData) {
+function Conversation (config, onStateChange, onSuccess, onError, onAudioData) {
   let currentState;
 
   this.config = applyDefaults(config);
@@ -40,28 +43,44 @@ const Conversation = function (config, onStateChange, onSuccess, onError, onAudi
     return;
   }
 
-  this.onSilence = function () {
+  this.onSilence = function onSilence () {
     if (config.silenceDetection) {
       audioControl.stopRecording();
       currentState.advanceConversation();
     }
   };
 
-  this.transition = function (conversation) {
+  this.stopRecord = function stopRecord () {
+    audioControl.stopRecording();
+    audioControl.clear();
+    currentState = new Initial(currentState.state)
+
+    const state = currentState.state
+    onStateChange(state.message)
+    this.reset()
+  }
+
+  this.transition = function transition (conversation) {
     currentState = conversation;
     const state = currentState.state;
     onStateChange(state.message);
 
-    if (state.message === state.messages.SENDING || state.message === state.messages.SPEAKING) {
+    if (
+      state.message === state.messages.SENDING ||
+      state.message === state.messages.SPEAKING
+    ) {
       currentState.advanceConversation();
     }
-    if (state.message === state.messages.SENDING && !this.config.silenceDetection) {
+    if (
+      state.message === state.messages.SENDING &&
+      !this.config.silenceDetection
+    ) {
       audioControl.stopRecording();
     }
   };
 
-  this.advanceConversation = function () {
-    audioControl.supportsAudio(function (supported) {
+  this.advanceConversation = function advanceConversation () {
+    audioControl.supportsAudio(function supportsAudio (supported) {
       if (supported) {
         currentState.advanceConversation();
       } else {
@@ -70,12 +89,12 @@ const Conversation = function (config, onStateChange, onSuccess, onError, onAudi
     });
   };
 
-  this.updateConfig = function (newValue) {
-    this.config = applyDefaults(newValue);
+  this.updateConfig = function updateConfig (config) {
+    this.config = applyDefaults(config);
     this.vuiConfig = this.config.vuiConfig;
   };
 
-  this.reset = function () {
+  this.reset = function reset () {
     audioControl.clear();
     currentState = new Initial(currentState.state);
   };
@@ -85,34 +104,43 @@ const Conversation = function (config, onStateChange, onSuccess, onError, onAudi
   return {
     advanceConversation: this.advanceConversation,
     updateConfig: this.updateConfig,
-    reset: this.reset
+    reset: this.reset,
+    stopRecord: this.stopRecord
   };
-};
+}
 
-const Initial = function (state) {
+function Initial (state) {
   this.state = state;
   state.message = state.messages.PASSIVE;
-  this.advanceConversation = function () {
-    audioControl.startRecording(state.onSilence, state.onAudioData, state.config.silenceDetectionConfig);
+
+  this.advanceConversation = function advanceConversation () {
+    audioControl.startRecording(
+      state.onSilence,
+      state.onAudioData,
+      state.config.silenceDetectionConfig
+    );
+
     state.transition(new Listening(state));
   };
-};
+}
 
-const Listening = function (state) {
+function Listening (state) {
   this.state = state;
   state.message = state.messages.LISTENING;
-  this.advanceConversation = function () {
-    audioControl.exportWAV(function (blob) {
+
+  this.advanceConversation = function advanceConversation () {
+    audioControl.exportWAV(function exportWAV (blob) {
       state.audioInput = blob;
       state.transition(new Sending(state));
     });
   };
-};
+}
 
-const Sending = function (state) {
+function Sending (state) {
   this.state = state;
   state.message = state.messages.SENDING;
-  this.advanceConversation = function () {
+
+  this.advanceConversation = function advanceConversation () {
     state.vuiConfig.inputStream = state.audioInput;
 
     let data = new FormData();
@@ -169,14 +197,15 @@ const Sending = function (state) {
       state.transition(new Initial(state));
     });
   };
-};
+}
 
-const Speaking = function (state) {
+function Speaking (state) {
   this.state = state;
   state.message = state.messages.SPEAKING;
-  this.advanceConversation = function () {
+
+  this.advanceConversation = function advanceConversation () {
     if (state.audioOutput.contentType === 'audio/mpeg') {
-      audioControl.play(state.audioOutput.audioStream, function () {
+      audioControl.play(state.audioOutput.audioStream, function play () {
         if (state.audioOutput.dialogState === 'ReadyForFulfillment' ||
           state.audioOutput.dialogState === 'Fulfilled' ||
           state.audioOutput.dialogState === 'Failed' ||
@@ -191,21 +220,39 @@ const Speaking = function (state) {
       state.transition(new Initial(state));
     }
   };
-};
+}
 
-const applyDefaults = function (config) {
+function applyDefaults (config) {
   config = config || {};
-  config.silenceDetection = config.hasOwnProperty('silenceDetection') ? config.silenceDetection : true;
+  config.silenceDetection = config.hasOwnProperty('silenceDetection')
+    ? config.silenceDetection
+    : true;
 
   const vuiConfig = config.vuiConfig || {};
-  vuiConfig.botAlias = vuiConfig.hasOwnProperty('botAlias') ? vuiConfig.botAlias : DEFAULT_LATEST;
-  vuiConfig.botName = vuiConfig.hasOwnProperty('botName') ? vuiConfig.botName : '';
-  vuiConfig.contentType = vuiConfig.hasOwnProperty('contentType') ? vuiConfig.contentType : DEFAULT_CONTENT_TYPE;
-  vuiConfig.userId = vuiConfig.hasOwnProperty('userId') ? vuiConfig.userId : DEFAULT_USER_ID;
-  vuiConfig.accept = vuiConfig.hasOwnProperty('accept') ? vuiConfig.accept : DEFAULT_ACCEPT_HEADER_VALUE;
+
+  vuiConfig.botAlias = vuiConfig.hasOwnProperty('botAlias')
+    ? vuiConfig.botAlias
+    : DEFAULT_LATEST;
+
+  vuiConfig.botName = vuiConfig.hasOwnProperty('botName')
+    ? vuiConfig.botName
+    : '';
+
+  vuiConfig.contentType = vuiConfig.hasOwnProperty('contentType')
+    ? vuiConfig.contentType
+    : DEFAULT_CONTENT_TYPE;
+
+  vuiConfig.userId = vuiConfig.hasOwnProperty('userId')
+    ? vuiConfig.userId
+    : DEFAULT_USER_ID;
+
+  vuiConfig.accept = vuiConfig.hasOwnProperty('accept')
+    ? vuiConfig.accept
+    : DEFAULT_ACCEPT_HEADER_VALUE;
+
   config.vuiConfig = vuiConfig;
 
   return config;
-};
+}
 
 export default Conversation;

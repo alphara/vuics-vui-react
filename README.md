@@ -30,7 +30,7 @@ Please do the following steps to integrate VUI into your React.js web applicatio
 2. Contact us by [email](mailto:admin@vuics.com) with request to use Vuics API.
 3. We will create a Vuics API Key and share to you.
 4. Install the library and write the integration code (how? see below).
-5. Feel free to ask us and questions or help with the integration.
+5. Feel free to ask us any questions or help with the integration.
 
 ## Install
 

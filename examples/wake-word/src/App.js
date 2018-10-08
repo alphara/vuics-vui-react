@@ -14,7 +14,8 @@ import {
 
 import {
   Button,
-  Loader
+  Loader,
+  Radio,
 } from 'semantic-ui-react'
 import 'semantic-ui-css/semantic.min.css'
 
@@ -38,7 +39,6 @@ export default class App extends Component {
 
   componentDidMount = () => {
     const onWakeWord = () => {
-      // speak({ phrase: 'Hello! I am Voice User Interface!' })
       speak({ phrase: 'Listening' });
       wakeUp();
       // listen.pause();
@@ -84,23 +84,20 @@ export default class App extends Component {
         }} color='blue'>
           Speak
         </Button>
-        <Button onClick={() => {
-          if (this.state.listening) {
-            console.log('Stop wake-word listening');
-            listen.abort();
-            this.setState({ listening: false });
-          } else {
-            console.log('Resume wake-word listening');
-            listen.resume();
-            this.setState({ listening: true });
-          }
-        }} color='yellow'>
-          {
-            this.state.listening ?
-              'Stop wake-word listening' :
-              'Resume wake-word listening'
-          }
-        </Button>
+        <Radio toggle
+          label='Wake-Word ("Hello Voice")&nbsp;'
+          disabled={!listen.isSupported}
+          checked={this.state.listening}
+          onChange={(event, data) => {
+            console.log('event:', event, ', data:', data)
+            if (data.checked) {
+              listen.resume();
+            } else {
+              listen.abort();
+            }
+            this.setState({ listening: data.checked })
+          }}
+        />
 
         <Vuics
           vuicsVuiId='VuicsHome'

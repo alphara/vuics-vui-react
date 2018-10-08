@@ -14,12 +14,9 @@ export {
 } from './oscilloscope'
 
 export {
-  default as speak
-} from './speech/synthesizer'
-
-export {
-  default as listen
-} from './speech/recognizer'
+  Synthesizer,
+  Recognizer
+} from './speech'
 
 export const initVuics = ({ apiKey, apiUrl }) => {
   console.log('init')

@@ -24,7 +24,7 @@ SOFTWARE.
 */
 // Version: 2.6.1-0.0.1
 
-const factory = (root) =>  {
+const recognizerFactory = (root) =>  {
 
   var recognizer;
 
@@ -166,6 +166,7 @@ const factory = (root) =>  {
       recognition.continuous = root.location.protocol === 'http:';
 
       recognition.lang = 'en-US';
+      // recognition.lang = 'ru-RU';
 
       recognition.onstart = function() {
         isListening = true;
@@ -385,4 +386,5 @@ const factory = (root) =>  {
   return recognizer;
 }
 
-export default factory(window)
+const Recognizer = recognizerFactory(window);
+export default Recognizer;

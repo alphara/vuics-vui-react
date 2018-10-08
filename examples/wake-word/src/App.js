@@ -8,8 +8,8 @@ import {
   ButtonDefault,
   Oscilloscope,
   Consumer,
-  speak,
-  listen,
+  Synthesizer,
+  Recognizer,
 } from '@vuics/vui-react'
 
 import {
@@ -23,79 +23,90 @@ initVuics({
   apiKey: process.env.REACT_APP_VUICS_API_KEY
 })
 
-let savedOnClick = () => {}
-let wakeUp = () => { console.log('wakeUp'); savedOnClick(); }
-
 export default class App extends Component {
   onData = data => {
     console.log('intentName:', data.intentName)
-    listen.resume();
-    this.setState({ listening: true });
+    Recognizer.resume();
+    this.setState({ recognizing: true });
   }
 
   state = {
-    listening: false,
+    recognizing: false,
   };
+
+  savedOnClick = () => {};
+
+  wakeUp = () => { console.log('wakeUp'); this.savedOnClick(); }
 
   componentDidMount = () => {
     const onWakeWord = () => {
-      speak({ phrase: 'Listening' });
-      wakeUp();
-      // listen.pause();
-      listen.abort();
-      this.setState({ listening: false });
+      Synthesizer.speak({ phrase: 'Listening' });
+      setTimeout(this.wakeUp, 1000);
+      Recognizer.abort(); // alternative way: Recognizer.pause();
+      this.setState({ recognizing: false });
     }
 
-    const onBye = () => {
-      speak({ phrase: 'Talk to you soon' });
+    const onSleepWord = () => {
+      Synthesizer.speak({ phrase: 'Talk to you soon' });
+      Recognizer.abort();
+      this.setState({ recognizing: false });
     }
 
-    const onHowAreYou = () => speak({ phrase: 'I am fine. Thank you!' });
-
-    listen.addCommands({
+    Recognizer.addCommands({
       'Hello Voice': onWakeWord,
       'Hey Voice': onWakeWord,
+      'Hi Voice': onWakeWord,
       'Hello Vuics': onWakeWord,
       'Hey Vuics': onWakeWord,
+      'Hi Vuics': onWakeWord,
       'Hello Voice Interface': onWakeWord,
       'Hey Voice Interface': onWakeWord,
+      'Hi Voice Interface': onWakeWord,
       'Hello Voice User Interface': onWakeWord,
       'Hey Voice User Interface': onWakeWord,
+      'Hi Voice User Interface': onWakeWord,
       'Click to Speak': onWakeWord,
 
-      'How are you': onHowAreYou,
-      'How are you doing': onHowAreYou,
-      'Whats up': onHowAreYou,
-      'Goodbye': onBye,
-      'Bye': onBye,
-      'See you': onBye,
-      'Talk to you later': onBye,
-      'Talk to you soon': onBye
+      'Goodbye Voice': onSleepWord,
+      'Bye Voice': onSleepWord,
+      'Bye-bye Voice': onSleepWord,
+      'Goodbye Vuics': onSleepWord,
+      'Bye Vuics': onSleepWord,
+      'Bye-bye Vuics': onSleepWord,
+      'Goodbye Voice Interface': onSleepWord,
+      'Bye Voice Interface': onSleepWord,
+      'Bye-bye Voice Interface': onSleepWord,
+      'Goodbye Voice User Interface': onSleepWord,
+      'Bye Voice User Interface': onSleepWord,
+      'Bye-bye Voice User Interface': onSleepWord,
     });
-    listen.start();
-    this.setState({ listening: true });
+    Recognizer.start();
+    this.setState({ recognizing: true });
   }
 
   render = () => {
     return (
       <div>
         <Button onClick={() => {
-          speak({ phrase: 'Hello!   I am your Voice User Interface.'})
+          Synthesizer.speak({ phrase: 'Hello!   I am your Voice User Interface.'})
         }} color='blue'>
           Speak
         </Button>
         <Radio toggle
-          label='Wake-Word ("Hello Voice")&nbsp;'
-          disabled={!listen.isSupported}
-          checked={this.state.listening}
+          label={
+            Recognizer.isSupported ?
+              'Wake-Word "Hello Voice" ' :
+              'No browser support of Wake-Word '
+          }
+          disabled={!Recognizer.isSupported}
+          checked={this.state.recognizing}
           onChange={(event, data) => {
-            console.log('event:', event, ', data:', data)
             if (data.checked) {
-              listen.resume();
+              Recognizer.resume();
             } else {
-              listen.abort();
+              Recognizer.abort();
             }
-            this.setState({ listening: data.checked })
+            this.setState({ recognizing: data.checked })
           }}
         />
 
@@ -113,11 +124,11 @@ export default class App extends Component {
           <Consumer>
             {
               ({ buttonRef, onClick, state, message }) => {
-                savedOnClick = onClick
+                this.savedOnClick = onClick
                 return (
                   <Button
                     className='button'
-                    onClick={wakeUp}
+                    onClick={this.wakeUp}
                     ref={buttonRef}
                     size='huge'
                     color='green'

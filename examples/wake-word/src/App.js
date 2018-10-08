@@ -94,11 +94,11 @@ export default class App extends Component {
         </Button>
         <Radio toggle
           label={
-            Recognizer.isSupported ?
+            Recognizer.isSupported() ?
               'Wake-Word "Hello Voice" ' :
               'No browser support of Wake-Word '
           }
-          disabled={!Recognizer.isSupported}
+          disabled={!Recognizer.isSupported()}
           checked={this.state.recognizing}
           onChange={(event, data) => {
             if (data.checked) {

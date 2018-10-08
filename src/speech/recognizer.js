@@ -41,7 +41,7 @@ const recognizerFactory = (root) =>  {
     console.error('The browser does not support speech recognition')
     // return null;
     return {
-      isSupported: false,
+      isSupported: () => false,
       init: () => {},
       start: () => {},
       abort: () => {},
@@ -150,7 +150,7 @@ const recognizerFactory = (root) =>  {
 
   recognizer = {
 
-    isSupported: true,
+    isSupported: () => true,
 
     init: function(commands, resetCommands = true) {
       if (recognition && recognition.abort) {

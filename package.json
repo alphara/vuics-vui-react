@@ -1,6 +1,6 @@
 {
   "name": "@vuics/vui-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vuics React.js Component for Voice User Interface integration",
   "author": "Artem Arakcheev",
   "license": "ISC",

@@ -45,10 +45,14 @@ npm i prop-types react react-dom react-scripts webworkify-webpack
 
 ## Usage
 
-Please contact us on Vuics.com to get credentials such as:
+Please contact us on [Vuics.com](https://vuics.com) to get credentials such as:
 ```
 export REACT_APP_VUICS_API_KEY=
 ```
+You can declare the variable above in JS file, or consume variables declared in
+your environment.
+For example, (react-create-app)[https://github.com/facebook/create-react-app]
+automatically consumes environment variables starting with `REACT_APP_`.
 
 Then add the code below into your React.js application:
 ```javascript

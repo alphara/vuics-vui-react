@@ -135,6 +135,22 @@ export default class App extends Component {
 }
 ```
 
+## Manifest Permissions
+
+To allow using Web Speech API (e.g. for wake-word),
+set the following permissions in your manifest.json:
+```json
+  "type": "privileged",
+  "permissions": {
+    "audio-capture": {
+      "description": "Audio capture"
+    },
+    "speech-recognition": {
+      "description": "Speech recognition"
+    }
+  }
+```
+
 ## Examples
 
 See examples in the [examples](./examples/) dir.

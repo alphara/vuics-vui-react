@@ -1,12 +1,14 @@
 # vuics-vui-react
 
-> Vuics.com React.js Component for Voice User Interface (VUI) integration
+> Vuics.com React.js Component for Voice User Interface (VUI) integration.
 
 [![NPM](https://img.shields.io/npm/v/@vuics/vui-react.svg)](https://www.npmjs.com/package/@vuics/vui-react) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 ## Description
 
-A Set of React Components that provide easy usage of the [Vuics.com](https://vuics.com) API for building Voice User Interfaces for your website.
+A Set of React Components that provide easy usage of the
+[Vuics.com](https://vuics.com) API for building Voice User Interfaces for
+your website.
 
 ## Features
 
@@ -26,11 +28,12 @@ A Set of React Components that provide easy usage of the [Vuics.com](https://vui
 
 Please do the following steps to integrate VUI into your React.js web application.
 
-1. Sing up on [Vuics.com](https://vuics.com)
-2. Contact us by [email](mailto:admin@vuics.com) with request to use Vuics API.
+1. Sing up on [Vuics.com](https://vuics.com).
+2. Contact us by [email](mailto:admin@vuics.com) or on
+[Vuics.com](https://vuics.com) with request to use Vuics API.
 3. We will create a Vuics API Key and share to you.
 4. Install the library and write the integration code (how? see below).
-5. Feel free to ask us any questions or help with the integration.
+5. Feel free to ask us any questions. We would love to help with the integration.
 
 ## Install
 
@@ -45,13 +48,14 @@ npm i prop-types react react-dom react-scripts webworkify-webpack
 
 ## Usage
 
-Please contact us on [Vuics.com](https://vuics.com) to get credentials such as:
+Please, contact us by [email](mailto:admin@vuics.com) or on
+[Vuics.com](https://vuics.com) to get credentials such as:
 ```
 export REACT_APP_VUICS_API_KEY=
 ```
 You can declare the variable above in JS file, or consume variables declared in
 your environment.
-For example, (react-create-app)[https://github.com/facebook/create-react-app]
+For example, [react-create-app](https://github.com/facebook/create-react-app)
 automatically consumes environment variables starting with `REACT_APP_`.
 
 Then add the code below into your React.js application:
@@ -135,8 +139,10 @@ export default class App extends Component {
 
 See examples in the [examples](./examples/) dir.
 
-* [Click-to-Speak](./examples/click-to-speak/) example demonstrates usage of Click-To-Speak button for Voice User Interface.
-* [Wake-Word](./examples/wake-word) example demontrate usage of Wake-Word and Sleep-Word for managing Voice User Interface.
+* [Click-to-Speak](./examples/click-to-speak/) example demonstrates usage of
+Click-To-Speak button for Voice User Interface.
+* [Wake-Word](./examples/wake-word) example demontrate usage of Wake-Word and
+Sleep-Word for managing Voice User Interface.
 
 ## API
 

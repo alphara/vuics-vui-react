@@ -39,46 +39,32 @@ export default class App extends Component {
   wakeUp = () => { console.log('wakeUp'); this.savedOnClick(); }
 
   componentDidMount = () => {
-    const onWakeWord = () => {
+    const onWakeWord = (greeting, vuiname) => {
+      console.log('greeting:', greeting, ', vuiname:', vuiname);
       Synthesizer.speak({ phrase: 'Listening' });
       setTimeout(this.wakeUp, 1000);
       Recognizer.abort(); // alternative way: Recognizer.pause();
       this.setState({ recognizing: false });
     }
 
-    const onSleepWord = () => {
+    const onSleepWord = (farewell, vuiname) => {
+      console.log('farewell:', farewell, ', vuiname:', vuiname);
       Synthesizer.speak({ phrase: 'Talk to you soon' });
       Recognizer.abort();
       this.setState({ recognizing: false });
     }
 
     Recognizer.addCommands({
-      'Hello Voice': onWakeWord,
-      'Hey Voice': onWakeWord,
-      'Hi Voice': onWakeWord,
-      'Hello Vuics': onWakeWord,
-      'Hey Vuics': onWakeWord,
-      'Hi Vuics': onWakeWord,
-      'Hello Voice Interface': onWakeWord,
-      'Hey Voice Interface': onWakeWord,
-      'Hi Voice Interface': onWakeWord,
-      'Hello Voice User Interface': onWakeWord,
-      'Hey Voice User Interface': onWakeWord,
-      'Hi Voice User Interface': onWakeWord,
+      ':greeting :vuiname': {
+        'regexp': /^(Hello|Hey|Hi) (Vuics|Voice|Voice Interface|Voice User Interface)$/,
+        'callback': onWakeWord,
+      },
       'Click to Speak': onWakeWord,
 
-      'Goodbye Voice': onSleepWord,
-      'Bye Voice': onSleepWord,
-      'Bye-bye Voice': onSleepWord,
-      'Goodbye Vuics': onSleepWord,
-      'Bye Vuics': onSleepWord,
-      'Bye-bye Vuics': onSleepWord,
-      'Goodbye Voice Interface': onSleepWord,
-      'Bye Voice Interface': onSleepWord,
-      'Bye-bye Voice Interface': onSleepWord,
-      'Goodbye Voice User Interface': onSleepWord,
-      'Bye Voice User Interface': onSleepWord,
-      'Bye-bye Voice User Interface': onSleepWord,
+      ':farewell :vuiname': {
+        'regexp': /^(Goodbye|Bye|Bye-bye) (Vuics|Voice|Voice Interface|Voice User Interface)$/,
+        'callback': onSleepWord,
+      },
     });
     Recognizer.start();
     this.setState({ recognizing: true });

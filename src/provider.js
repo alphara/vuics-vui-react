@@ -78,10 +78,6 @@ export default class Vuics extends Component {
     this.canvasCtx = null
   }
 
-  componentDidMount = () => {
-    this.addCommands(this.props.commands)
-  }
-
   static propTypes = {
     locale: PropTypes.string.isRequired,
     commands: PropTypes.object.isRequired,
@@ -118,6 +114,8 @@ export default class Vuics extends Component {
   };
 
   componentDidMount = () => {
+    this.addCommands(this.props.commands)
+
     window.addEventListener('resize', this.setCanvasDimensions)
 
     this.setCanvasDimensions()
@@ -625,10 +623,6 @@ export default class Vuics extends Component {
             resume: this.resume,
             debug: this.debug,
             setLanguage: this.setLanguage,
-            addCommands: this.addCommands,
-            removeCommands: this.removeCommands,
-            addCallback: this.addCallback,
-            removeCallback: this.removeCallback,
             isListening: this.isListening,
             trigger: this.trigger
           }); // eslint-disable-line babel/no-invalid-this

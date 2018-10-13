@@ -43,10 +43,6 @@ export default class App extends Component {
     resume, // func
     debug, // func
     setLanguage, // func
-    addCommands, // func
-    removeCommands, // func
-    addCallback, // func
-    removeCallback, // func
     isListening, // func
     trigger // func
   }) => {
@@ -96,10 +92,6 @@ export default class App extends Component {
     resume, // func
     debug, // func
     setLanguage, // func
-    addCommands, // func
-    removeCommands, // func
-    addCallback, // func
-    removeCallback, // func
     isListening, // func
     trigger // func
   }) => {

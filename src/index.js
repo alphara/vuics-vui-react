@@ -1,8 +1,8 @@
 import settings from './vui/settings'
 
 export {
-  default as Vuics,
-  Consumer
+  default as VuicsProvider,
+  Consumer as VuicsConsumer
 } from './provider'
 
 export {

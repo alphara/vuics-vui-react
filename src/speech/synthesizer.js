@@ -1,12 +1,14 @@
 const synth = window.speechSynthesis;
 
 let voices;
+
 const onVoicesChanged = () => {
   voices = synth.getVoices();
   // console.log('voices:', voices);
 }
 
 onVoicesChanged();
+
 if (speechSynthesis.onvoiceschanged !== undefined) {
   speechSynthesis.onvoiceschanged = onVoicesChanged;
 }
@@ -18,7 +20,8 @@ export default class Synthesizer {
       return;
     }
 
-    const utterThis = new SpeechSynthesisUtterance(phrase);
+    const utterThis = new window.SpeechSynthesisUtterance(phrase);
+
     utterThis.onend = (event) => {
       // console.log('SpeechSynthesisUtterance.onend');
     }

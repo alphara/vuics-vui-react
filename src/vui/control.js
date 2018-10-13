@@ -2,7 +2,6 @@ import AudioRecorder from './recorder.js';
 
 let recorder;
 let audioRecorder;
-let checkAudioSupport;
 let audioSupported;
 let playbackSource;
 
@@ -10,7 +9,7 @@ const UNSUPPORTED = 'Audio is not supported.';
 
 function AudioControl (options = {}) {
   this.checkAudioSupport = options.checkAudioSupport !== false;
-  console.log('checkAudioSupport:', checkAudioSupport)
+  console.log('checkAudioSupport:', this.checkAudioSupport)
 
   function startRecording (
     onSilence = () => {},

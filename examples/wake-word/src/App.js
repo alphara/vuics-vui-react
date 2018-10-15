@@ -20,10 +20,10 @@ initVuics({
 })
 
 export default class App extends Component {
-  onGreetings = ({
+  onGreetings = ([
     greeting,
     vuiname
-  }, {
+  ], {
     isSynthesizerSupported, // func
     isRecognitionSupported, // func
 

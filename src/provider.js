@@ -114,6 +114,7 @@ export default class Vuics extends Component {
   };
 
   componentDidMount = () => {
+    console.log('Vuics componentDidMount')
     this.addCommands(this.props.commands)
 
     window.addEventListener('resize', this.setCanvasDimensions)
@@ -406,16 +407,18 @@ export default class Vuics extends Component {
       return
     }
 
-    Object.keys(commands).forEach((phrase) => {
-      const cb = window[commands[phrase]] || commands[phrase];
+    Object.keys(commands).forEach((key) => {
+      console.log('addCommands key: ', key)
 
-      if (typeof cb === 'function') {
-        this._registerCommand(this._commandToRegExp(phrase), cb, phrase);
-      } else if (typeof cb === 'object' && cb.regexp instanceof RegExp) {
-        this._registerCommand(new RegExp(cb.regexp.source, 'i'), cb.callback, phrase);
+      const command = commands[key];
+
+      if (typeof command === 'function') {
+        this._registerCommand(this._commandToRegExp(key), command, key);
+      } else if (typeof command === 'object' && command.regexp instanceof RegExp) {
+        this._registerCommand(new RegExp(command.regexp.source, 'i'), command.callback, key);
       } else {
         if (this.state.debugState) {
-          this._logMessage('Can not register command: %c' + phrase, debugStyle);
+          this._logMessage('Can not register command: %c' + key, debugStyle);
         }
       }
     })
@@ -557,6 +560,7 @@ export default class Vuics extends Component {
   }
 
   _registerCommand = (command, callback, originalPhrase) => {
+    console.log('_registerCommand command: ', command, ' callback: ', callback, ' originalPhrase: ', originalPhrase)
     this.setState(
       ({ commandsList }) => ({
         commandsList: [
@@ -603,7 +607,9 @@ export default class Vuics extends Component {
             }
           }
 
-          currentCommand.callback.apply(this, parameters, {
+          console.log('parameters: ', parameters)
+
+          currentCommand.callback.apply(this, [parameters, {
             isSynthesizerSupported: () => !!synth,
             isRecognitionSupported: this.isRecognitionSupported,
 
@@ -625,7 +631,7 @@ export default class Vuics extends Component {
             setLanguage: this.setLanguage,
             isListening: this.isListening,
             trigger: this.trigger
-          }); // eslint-disable-line babel/no-invalid-this
+          }]); // eslint-disable-line babel/no-invalid-this
 
           this._invokeCallbacks(
             callbacks.resultMatch,

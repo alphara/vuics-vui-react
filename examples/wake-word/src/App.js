@@ -24,27 +24,27 @@ export default class App extends Component {
     greeting,
     vuiname
   ], {
-    isSynthesizerSupported, // func
-    isRecognitionSupported, // func
+    // isSynthesizerSupported, // func
+    // isRecognitionSupported, // func
 
     speak, // func
     onClick, // func
 
-    state, // string
-    transcript, // string
-    message, // string
-
-    recognizing, // bool,
-    listening, // bool
-
-    start, // func
+    // state, // string
+    // transcript, // string
+    // message, // string
+    //
+    // recognizing, // bool,
+    // listening, // bool
+    //
+    // start, // func
     abort, // func
-    pause, // func
-    resume, // func
-    debug, // func
-    setLanguage, // func
-    isListening, // func
-    trigger // func
+    // pause, // func
+    // resume, // func
+    // debug, // func
+    // setLanguage, // func
+    // isListening, // func
+    // trigger // func
   }) => {
     console.log('greeting:', greeting, ', vuiname:', vuiname);
 
@@ -70,30 +70,30 @@ export default class App extends Component {
     abort(); // alternative way: Recognizer.pause();
   }
 
-  onGoodbay = ({
+  onGoodbay = ([
     farewell,
     vuiname
-  }, {
-    isSynthesizerSupported, // func
-    isRecognitionSupported, // func
+  ], {
+    // isSynthesizerSupported, // func
+    // isRecognitionSupported, // func
 
     speak, // func
-
-    state, // string
-    transcript, // string
-    message, // string
-
-    recognizing, // bool,
-    listening, // bool
-
-    start, // func
+    //
+    // state, // string
+    // transcript, // string
+    // message, // string
+    //
+    // recognizing, // bool,
+    // listening, // bool
+    //
+    // start, // func
     abort, // func
-    pause, // func
-    resume, // func
-    debug, // func
-    setLanguage, // func
-    isListening, // func
-    trigger // func
+    // pause, // func
+    // resume, // func
+    // debug, // func
+    // setLanguage, // func
+    // isListening, // func
+    // trigger // func
   }) => {
     console.log('farewell:', farewell, ', vuiname:', vuiname);
 
@@ -113,58 +113,173 @@ export default class App extends Component {
     abort();
   }
 
+  hello = (data, api) => {
+    const {
+      intentName, // string
+      // audioStream, // ArrayBuffer
+      // contentType, // string
+      // dialogState, // string
+      // slots // object
+    } = data
+
+    const {
+      // isSynthesizerSupported, // func
+      // isRecognitionSupported, // func
+      //
+      // speak, // func
+      //
+      // state, // string
+      // transcript, // string
+      // message, // string
+      //
+      // recognizing, // bool,
+      // listening, // bool
+      //
+      // onClick, // func
+      //
+      // start, // func
+      // abort, // func
+      // pause, // func
+      resume, // func
+      // debug, // func
+      // setLanguage, // func
+      // addSpeechHandlers, // func
+      // removeSpeechHandlers, // func
+      // addCallback, // func
+      // removeCallback, // func
+      // isListening, // func
+      // trigger // func
+    } = api
+
+    console.log('intentName:', intentName)
+
+    resume();
+  }
+
+  howareyou = (data, api) => {
+    const {
+      intentName, // string
+      // audioStream, // ArrayBuffer
+      // contentType, // string
+      // dialogState, // string
+      // slots // object
+    } = data
+
+    const {
+      // isSynthesizerSupported, // func
+      // isRecognitionSupported, // func
+      //
+      // speak, // func
+      //
+      // state, // string
+      // transcript, // string
+      // message, // string
+      //
+      // recognizing, // bool,
+      // listening, // bool
+      //
+      // onClick, // func
+      //
+      // start, // func
+      // abort, // func
+      // pause, // func
+      resume, // func
+      // debug, // func
+      // setLanguage, // func
+      // addSpeechHandlers, // func
+      // removeSpeechHandlers, // func
+      // addCallback, // func
+      // removeCallback, // func
+      // isListening, // func
+      // trigger // func
+    } = api
+    console.log('intentName:', intentName)
+
+    resume();
+  }
+
+  intentHandlers = {
+    'Hello': this.hello,
+    'HowAreYou': this.howareyou
+  }
+
+  speechHandlers = {
+    ':greeting :vuiname': {
+      'regexp': /^(Hello|Hey|Hi) (Vuics|Voice|Voice Interface|Voice User Interface)$/,
+      'callback': this.onGreetings
+    },
+    'Click to Speak': this.onGreetings,
+
+    ':farewell :vuiname': {
+      'regexp': /^(Goodbye|Bye|Bye-bye) (Vuics|Voice|Voice Interface|Voice User Interface)$/,
+      'callback': this.onGoodbay
+    }
+  }
+
+  recognitionCallbacks = {
+    start: [
+      (api) => {
+        console.log('recognitionCallbacks start api: ', api)
+      }
+    ],
+    end: [
+      (api) => {
+
+      }
+    ],
+    soundstart: [
+      (api) => {
+
+      }
+    ],
+    result: [
+      (results, api) => {
+
+      }
+    ],
+    resultMatch: [
+      ({ commandText, originalPhrase, results }, api) => {
+
+      }
+    ],
+    resultNoMatch: [
+      (results, api) => {
+
+      }
+    ],
+    error: [
+      (event, api) => {
+        console.log('error event', event)
+      }
+    ],
+    errorNetwork: [
+      (event, api) => {
+        console.log('errorNetwork event', event)
+      }
+    ],
+    errorPermissionBlocked: [
+      (event, api) => {
+        console.log('errorPermissionBlocked event', event)
+      }
+    ],
+    errorPermissionDenied: [
+      (event, api) => {
+        console.log('errorPermissionDenied event', event)
+      }
+    ]
+  }
+
   render = () => (
-    <div>
       <VuicsProvider
         vuicsVuiId='VuicsHome'
-        onConversationData={(data, {
-          isSynthesizerSupported, // func
-          isRecognitionSupported, // func
 
-          speak, // func
-
-          state, // string
-          transcript, // string
-          message, // string
-
-          recognizing, // bool,
-          listening, // bool
-
-          onClick, // func
-
-          start, // func
-          abort, // func
-          pause, // func
-          resume, // func
-          debug, // func
-          setLanguage, // func
-          addCommands, // func
-          removeCommands, // func
-          addCallback, // func
-          removeCallback, // func
-          isListening, // func
-          trigger // func
-        }) => {
-          console.log('intentName:', data.intentName)
-
-          resume();
-        }}
         fillStyle='rgb(27,28,29)'
         lineWidth={2}
         strokeStyle='rgb(33,186,70)'
-        locale='EN_us'
-        commands={{ // eslint-disable-line  react-perf/jsx-no-new-object-as-prop
-          ':greeting :vuiname': {
-            'regexp': /^(Hello|Hey|Hi) (Vuics|Voice|Voice Interface|Voice User Interface)$/,
-            'callback': this.onGreetings
-          },
-          'Click to Speak': this.onGreetings,
-
-          ':farewell :vuiname': {
-            'regexp': /^(Goodbye|Bye|Bye-bye) (Vuics|Voice|Voice Interface|Voice User Interface)$/,
-            'callback': this.onGoodbay
-          }
-        }}
+        locale='en_US'
+        speechHandlers={this.speechHandlers}
+        intentHandlers={this.intentHandlers}
+        recognitionCallbacks={this.recognitionCallbacks}
       >
         <VuicsConsumer>
           {
@@ -190,8 +305,8 @@ export default class App extends Component {
               resume, // func
               debug, // func
               setLanguage, // func
-              addCommands, // func
-              removeCommands, // func
+              addSpeechHandlers, // func
+              removeSpeechHandlers, // func
               addCallback, // func
               removeCallback, // func
               isListening, // func
@@ -233,33 +348,33 @@ export default class App extends Component {
                     if (data.checked) {
                       speak({
                         phrase: "I'm listening for Hello voice.",
-                        onError: (event) => {
-
-                        },
-                        onEnd: (event) => {
-
-                        },
                         voiceIndex: 0,
                         pitch: 1,
-                        rate: 1
-                      })
+                        rate: 1,
+                        onSpeechEnd: () => {
+                          start({
+                            paused: false
+                          })
+                        },
+                        onSpeechError: () => {
 
-                      start({ paused: false });
+                        }
+                      })
                     } else {
+                      abort();
+
                       speak({
                         phrase: "I'm not listening anymore.",
-                        onError: (event) => {
-
-                        },
-                        onEnd: (event) => {
-
-                        },
                         voiceIndex: 0,
                         pitch: 1,
-                        rate: 1
-                      })
+                        rate: 1,
+                        onSpeechEnd: () => {
 
-                      abort();
+                        },
+                        onSpeechError: () => {
+
+                        }
+                      })
                     }
                   }}
                 />
@@ -295,6 +410,5 @@ export default class App extends Component {
           }
         </VuicsConsumer>
       </VuicsProvider>
-    </div>
   )
 }

@@ -21,18 +21,155 @@ initVuics({
 })
 
 export default class App extends Component {
-  onData = data => {
-    console.log('intentName:', data.intentName)
+  hello = (data, api) => {
+    const {
+      intentName, // string
+      audioStream, // ArrayBuffer
+      contentType, // string
+      dialogState, // string
+      slots // object
+    } = data
+
+    const {
+      isSynthesizerSupported, // func
+      isRecognitionSupported, // func
+
+      speak, // func
+
+      state, // string
+      transcript, // string
+      message, // string
+
+      recognizing, // bool,
+      listening, // bool
+
+      onClick, // func
+
+      start, // func
+      abort, // func
+      pause, // func
+      resume, // func
+      debug, // func
+      setLanguage, // func
+      addSpeechHandlers, // func
+      removeSpeechHandlers, // func
+      addCallback, // func
+      removeCallback, // func
+      isListening, // func
+      trigger // func
+    } = api
+
+    console.log('data:', data, ', api:', api)
+  }
+
+  howareyou = (data, api) => {
+    const {
+      intentName, // string
+      audioStream, // ArrayBuffer
+      contentType, // string
+      dialogState, // string
+      slots // object
+    } = data
+
+    const {
+      isSynthesizerSupported, // func
+      isRecognitionSupported, // func
+
+      speak, // func
+
+      state, // string
+      transcript, // string
+      message, // string
+
+      recognizing, // bool,
+      listening, // bool
+
+      onClick, // func
+
+      start, // func
+      abort, // func
+      pause, // func
+      resume, // func
+      debug, // func
+      setLanguage, // func
+      addSpeechHandlers, // func
+      removeSpeechHandlers, // func
+      addCallback, // func
+      removeCallback, // func
+      isListening, // func
+      trigger // func
+    } = api
+
+    console.log('data:', data, ', api:', api)
+  }
+
+  intentHandlers = {
+    'Hello': this.hello,
+    'HowAreYou': this.howareyou,
+  }
+
+  recognitionCallbacks = {
+    start: [
+      (api) => {
+
+      }
+    ],
+    end: [
+      (api) => {
+
+      }
+    ],
+    soundstart: [
+      (api) => {
+
+      }
+    ],
+    result: [
+      (results, api) => {
+
+      }
+    ],
+    resultMatch: [
+      ({ commandText, originalPhrase, results }, api) => {
+
+      }
+    ],
+    resultNoMatch: [
+      (results, api) => {
+
+      }
+    ],
+    error: [
+      (event, api) => {
+        console.log('error event', event)
+      }
+    ],
+    errorNetwork: [
+      (event, api) => {
+        console.log('errorNetwork event', event)
+      }
+    ],
+    errorPermissionBlocked: [
+      (event, api) => {
+        console.log('errorPermissionBlocked event', event)
+      }
+    ],
+    errorPermissionDenied: [
+      (event, api) => {
+        console.log('errorPermissionDenied event', event)
+      }
+    ]
   }
 
   render = () => (
     <div>
       <Vuics
         vuicsVuiId='VuicsHome'
-        onConversationData={this.onData}
         fillStyle='rgb(27,28,29)'
         lineWidth={2}
         strokeStyle='rgb(33,186,70)'
+        intentHandlers={this.intentHandlers}
+        recognitionCallbacks={this.recognitionCallbacks}
       >
         <ButtonDefault
           className='button'

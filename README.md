@@ -83,7 +83,40 @@ initVuics({
 })
 
 export default class App extends Component {
-  onData = data => {
+  onData = (data, api) => {
+    const {
+      intentName
+    } = data
+
+    const {
+      isSynthesizerSupported, // func
+      isRecognitionSupported, // func
+
+      speak, // func
+
+      state, // string
+      transcript, // string
+      message, // string
+
+      recognizing, // bool,
+      listening, // bool
+
+      onClick, // func
+
+      start, // func
+      abort, // func
+      pause, // func
+      resume, // func
+      debug, // func
+      setLanguage, // func
+      addCommands, // func
+      removeCommands, // func
+      addCallback, // func
+      removeCallback, // func
+      isListening, // func
+      trigger // func
+    } = api
+
     console.log('intentName:', data.intentName)
   }
 
@@ -151,13 +184,15 @@ set the following permissions in your manifest.json:
   }
 ```
 
+if you don't have manifest.json file, you need to create new one in public directory. https://app-manifest.firebaseapp.com/ This is manifest.json generator link. After generation add the code above.
+
 ## Examples
 
 See examples in the [examples](./examples/) dir.
 
 * [Click-to-Speak](./examples/click-to-speak/) example demonstrates usage of
 Click-To-Speak button for Voice User Interface.
-* [Wake-Word](./examples/wake-word) example demontrate usage of Wake-Word and
+* [Wake-Word](./examples/wake-word) example demonstrate usage of Wake-Word and
 Sleep-Word for managing Voice User Interface.
 
 ## API
@@ -222,4 +257,3 @@ Do you have any additional questions?
 Feel free to ask us any questions. We would love to help with the integration.
 
 You could contact us by [email](mailto:admin@vuics.com) or on [Vuics.com](https://vuics.com).
-

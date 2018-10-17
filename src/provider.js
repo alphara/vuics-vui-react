@@ -23,19 +23,6 @@ const SpeechRecognition =
   window.msSpeechRecognition ||
   window.oSpeechRecognition;
 
-const callbacks = {
-  start: [],
-  error: [],
-  end: [],
-  soundstart: [],
-  result: [],
-  resultMatch: [],
-  resultNoMatch: [],
-  errorNetwork: [],
-  errorPermissionBlocked: [],
-  errorPermissionDenied: []
-};
-
 const debugStyle = 'font-weight: bold; color: #00f;';
 // The command matching code is a modified version of Backbone.Router by Jeremy Ashkenas, under the MIT license.
 const optionalParam = /\s*\((.*?)\)\s*/g;
@@ -47,6 +34,35 @@ const escapeRegExp = /[\-{}\[\]+?.,\\\^$|#]/g; // eslint-disable-line no-useless
 export default class Vuics extends Component {
   constructor (props) {
     super(props)
+
+    this.state = {
+      recognitionCallbacks: props.recognitionCallbacks
+        ? props.recognitionCallbacks
+        : {
+          start: [],
+          error: [],
+          end: [],
+          soundstart: [],
+          result: [],
+          resultMatch: [],
+          resultNoMatch: [],
+          errorNetwork: [],
+          errorPermissionBlocked: [],
+          errorPermissionDenied: []
+        },
+      commandsList: [],
+      autoRestart: false,
+      lastStartedAt: 0,
+      autoRestartCount: 0,
+      debugState: true,
+      pauseListening: false,
+      recognizing: false,
+
+      transcript: '',
+      listening: false,
+      state: 'Passive',
+      message: 'Click to Speak!'
+    }
 
     if (synth) {
       this.voices = synth.getVoices()
@@ -61,11 +77,313 @@ export default class Vuics extends Component {
     if (SpeechRecognition) {
       this.recognition = null
 
-      this.init({
-        commands: {},
-        resetCommands: false,
-        lang: props.locale
-      })
+      if (!this.isRecognitionSupported()) {
+        return
+      }
+
+      if (
+        this.recognition !== null &&
+        this.recognition.abort
+      ) {
+        this.recognition.abort();
+      }
+
+      this.recognition = new SpeechRecognition();
+
+      this.recognition.maxAlternatives = 5;
+
+      // In HTTPS, turn off continuous mode for faster results.
+      // In HTTP,  turn on  continuous mode for much slower results, but no repeating security notices
+      this.recognition.continuous = window.location.protocol === 'http:';
+
+      this.recognition.lang = props.locale;
+      // this.recognition.lang = 'ru-RU';
+
+      this.recognition.onstart = () => {
+        console.log('recognition onstart')
+
+        this.setState(
+          () => ({
+            listening: true
+          }),
+          () => {
+            this._invokeRecognitionCallbacks(
+              this.state.recognitionCallbacks.start,
+              {
+                isSynthesizerSupported: () => !!synth,
+                isRecognitionSupported: this.isRecognitionSupported,
+
+                speak: this.speak,
+
+                state: this.state.state,
+                transcript: this.state.transcript,
+                message: this.state.message,
+                recognizing: this.state.recognizing,
+                listening: this.state.listening,
+
+                onClick: this.onClick,
+
+                start: this.start,
+                abort: this.abort,
+                pause: this.pause,
+                resume: this.resume,
+                debug: this.debug,
+                setLanguage: this.setLanguage,
+                isListening: this.isListening,
+                trigger: this.trigger
+              }
+            )
+          }
+        )
+      }
+
+      this.recognition.onsoundstart = () => {
+        this._invokeRecognitionCallbacks(
+          this.state.recognitionCallbacks.soundstart,
+          {
+            isSynthesizerSupported: () => !!synth,
+            isRecognitionSupported: this.isRecognitionSupported,
+
+            speak: this.speak,
+
+            state: this.state.state,
+            transcript: this.state.transcript,
+            message: this.state.message,
+            recognizing: this.state.recognizing,
+            listening: this.state.listening,
+
+            onClick: this.onClick,
+
+            start: this.start,
+            abort: this.abort,
+            pause: this.pause,
+            resume: this.resume,
+            debug: this.debug,
+            setLanguage: this.setLanguage,
+            isListening: this.isListening,
+            trigger: this.trigger
+          }
+        )
+      }
+
+      this.recognition.onerror = event => {
+        console.log('recognition onerror')
+
+        this._invokeRecognitionCallbacks(
+          this.state.recognitionCallbacks.error,
+          event,
+          {
+            isSynthesizerSupported: () => !!synth,
+            isRecognitionSupported: this.isRecognitionSupported,
+
+            speak: this.speak,
+
+            state: this.state.state,
+            transcript: this.state.transcript,
+            message: this.state.message,
+            recognizing: this.state.recognizing,
+            listening: this.state.listening,
+
+            onClick: this.onClick,
+
+            start: this.start,
+            abort: this.abort,
+            pause: this.pause,
+            resume: this.resume,
+            debug: this.debug,
+            setLanguage: this.setLanguage,
+            isListening: this.isListening,
+            trigger: this.trigger
+          }
+        )
+
+        switch (event.error) {
+          case 'network':
+            this._invokeRecognitionCallbacks(
+              this.state.recognitionCallbacks.errorNetwork,
+              event,
+              {
+                isSynthesizerSupported: () => !!synth,
+                isRecognitionSupported: this.isRecognitionSupported,
+
+                speak: this.speak,
+
+                state: this.state.state,
+                transcript: this.state.transcript,
+                message: this.state.message,
+                recognizing: this.state.recognizing,
+                listening: this.state.listening,
+
+                onClick: this.onClick,
+
+                start: this.start,
+                abort: this.abort,
+                pause: this.pause,
+                resume: this.resume,
+                debug: this.debug,
+                setLanguage: this.setLanguage,
+                isListening: this.isListening,
+                trigger: this.trigger
+              }
+            )
+            break
+          case 'not-allowed':
+          case 'service-not-allowed':
+            this.setState(
+              () => ({
+                autoRestart: false
+              })
+            )
+
+            if (new Date().getTime() - this.state.lastStartedAt < 200) {
+              this._invokeRecognitionCallbacks(
+                this.state.recognitionCallbacks.errorPermissionBlocked,
+                event,
+                {
+                  isSynthesizerSupported: () => !!synth,
+                  isRecognitionSupported: this.isRecognitionSupported,
+
+                  speak: this.speak,
+
+                  state: this.state.state,
+                  transcript: this.state.transcript,
+                  message: this.state.message,
+                  recognizing: this.state.recognizing,
+                  listening: this.state.listening,
+
+                  onClick: this.onClick,
+
+                  start: this.start,
+                  abort: this.abort,
+                  pause: this.pause,
+                  resume: this.resume,
+                  debug: this.debug,
+                  setLanguage: this.setLanguage,
+                  isListening: this.isListening,
+                  trigger: this.trigger
+                }
+              )
+            } else {
+              this._invokeRecognitionCallbacks(
+                this.state.recognitionCallbacks.errorPermissionDenied,
+                event,
+                {
+                  isSynthesizerSupported: () => !!synth,
+                  isRecognitionSupported: this.isRecognitionSupported,
+
+                  speak: this.speak,
+
+                  state: this.state.state,
+                  transcript: this.state.transcript,
+                  message: this.state.message,
+                  recognizing: this.state.recognizing,
+                  listening: this.state.listening,
+
+                  onClick: this.onClick,
+
+                  start: this.start,
+                  abort: this.abort,
+                  pause: this.pause,
+                  resume: this.resume,
+                  debug: this.debug,
+                  setLanguage: this.setLanguage,
+                  isListening: this.isListening,
+                  trigger: this.trigger
+                }
+              )
+            }
+            break;
+          default:
+        }
+      }
+
+      this.recognition.onend = () => {
+        console.log('recognition onend')
+
+        this.setState(
+          () => ({
+            listening: false
+          })
+        )
+
+        this._invokeRecognitionCallbacks(
+          this.state.recognitionCallbacks.end,
+          {
+            isSynthesizerSupported: () => !!synth,
+            isRecognitionSupported: this.isRecognitionSupported,
+
+            speak: this.speak,
+
+            state: this.state.state,
+            transcript: this.state.transcript,
+            message: this.state.message,
+            recognizing: this.state.recognizing,
+            listening: this.state.listening,
+
+            onClick: this.onClick,
+
+            start: this.start,
+            abort: this.abort,
+            pause: this.pause,
+            resume: this.resume,
+            debug: this.debug,
+            setLanguage: this.setLanguage,
+            isListening: this.isListening,
+            trigger: this.trigger
+          }
+        )
+
+        if (this.state.autoRestart) {
+          const timeSinceLastStart =
+            new Date().getTime() - this.state.lastStartedAt;
+
+          this.setState(
+            ({ autoRestartCount }) => ({
+              autoRestartCount: autoRestartCount + 1
+            })
+          )
+
+          if (this.state.autoRestartCount % 10 === 0) {
+            if (this.state.debugState) {
+              this._logMessage('Speech Recognition is repeatedly stopping and starting. Check that you are online and have opened only one window/tab with Speech Recognition in the browser.');
+            }
+          }
+
+          if (timeSinceLastStart < 1000) {
+            setTimeout(() => {
+              this.start({
+                paused: this.state.pauseListening
+              });
+            }, 1000 - timeSinceLastStart);
+          } else {
+            this.start({
+              paused: this.state.pauseListening
+            });
+          }
+        }
+      }
+
+      this.recognition.onresult = event => {
+        console.log('recognition onresult')
+
+        if (this.state.pauseListening) {
+          if (this.state.debugState) {
+            this._logMessage('Speech heard, but recognizer is paused')
+          }
+
+          return false
+        }
+
+        const SpeechRecognitionResult = event.results[event.resultIndex];
+
+        const results = [];
+
+        for (let k = 0; k < SpeechRecognitionResult.length; k++) {
+          results[k] = SpeechRecognitionResult[k].transcript
+        }
+
+        this._parseResults(results)
+      };
     } else {
       this._logMessage('SpeechRecognition does not supported by your browser!');
     }
@@ -80,12 +398,14 @@ export default class Vuics extends Component {
 
   static propTypes = {
     locale: PropTypes.string.isRequired,
-    commands: PropTypes.object.isRequired,
 
     children: PropTypes.node.isRequired,
 
     vuicsVuiId: PropTypes.string.isRequired,
-    onConversationData: PropTypes.func.isRequired,
+
+    intentHandlers: PropTypes.object.isRequired,
+    speechHandlers: PropTypes.object,
+    recognitionCallbacks: PropTypes.object,
 
     fillStyle: PropTypes.string,
     lineWidth: PropTypes.number,
@@ -95,27 +415,24 @@ export default class Vuics extends Component {
   static defaultProps = {
     fillStyle: 'rgb(27,28,29)',
     lineWidth: 2,
-    strokeStyle: 'rgb(33,186,70)'
+    strokeStyle: 'rgb(33,186,70)',
+    recognitionCallbacks: {
+      start: [],
+      error: [],
+      end: [],
+      soundstart: [],
+      result: [],
+      resultMatch: [],
+      resultNoMatch: [],
+      errorNetwork: [],
+      errorPermissionBlocked: [],
+      errorPermissionDenied: []
+    },
+    speechHandlers: {}
   }
 
-  state = {
-    commandsList: [],
-    autoRestart: false,
-    lastStartedAt: 0,
-    autoRestartCount: 0,
-    debugState: true,
-    pauseListening: false,
-    recognizing: false,
-
-    transcript: '',
-    listening: false,
-    state: 'Passive',
-    message: 'Click to Speak!'
-  };
-
   componentDidMount = () => {
-    console.log('Vuics componentDidMount')
-    this.addCommands(this.props.commands)
+    this.addSpeechHandlers(this.props.speechHandlers)
 
     window.addEventListener('resize', this.setCanvasDimensions)
 
@@ -132,13 +449,35 @@ export default class Vuics extends Component {
     this.voices = synth.getVoices();
   }
 
+  _onSpeechEnd = (cb) => () => {
+    cb()
+
+    this.setState(
+      () => ({
+        state: 'Passive',
+        listening: false
+      })
+    )
+  }
+
+  _onSpeechError = (cb) => () => {
+    cb()
+
+    this.setState(
+      () => ({
+        state: 'Passive',
+        listening: false
+      })
+    )
+  }
+
   speak = ({
     phrase,
-    onEnd = () => {},
-    onError = () => {},
     voiceIndex = 0,
     pitch = 1,
-    rate = 1
+    rate = 1,
+    onSpeechEnd = () => {},
+    onSpeechError = () => {}
   }) => {
     if (synth.speaking) {
       console.error('Synthesizer is already speaking.');
@@ -146,6 +485,7 @@ export default class Vuics extends Component {
     }
     this.setState(
       () => ({
+        state: 'Speaking',
         listening: false,
         recognizing: false
       })
@@ -153,159 +493,14 @@ export default class Vuics extends Component {
 
     const utterThis = new window.SpeechSynthesisUtterance(phrase);
 
-    utterThis.onend = onEnd
-    utterThis.onerror = onError
+    utterThis.onend = this._onSpeechEnd(onSpeechEnd)
+    utterThis.onerror = this._onSpeechError(onSpeechError)
 
     utterThis.voice = this.voices[voiceIndex];
     utterThis.pitch = pitch;
     utterThis.rate = rate;
 
     synth.speak(utterThis);
-  }
-
-  init = ({ commands, resetCommands = true, lang = 'en-US' }) => {
-    if (!this.isRecognitionSupported()) {
-      return
-    }
-
-    if (
-      this.recognition !== null &&
-      this.recognition.abort
-    ) {
-      this.recognition.abort();
-    }
-
-    this.recognition = new SpeechRecognition();
-
-    this.recognition.maxAlternatives = 5;
-
-    // In HTTPS, turn off continuous mode for faster results.
-    // In HTTP,  turn on  continuous mode for much slower results, but no repeating security notices
-    this.recognition.continuous = window.location.protocol === 'http:';
-
-    this.recognition.lang = lang;
-    // this.recognition.lang = 'ru-RU';
-
-    this.recognition.onstart = () => {
-      console.log('recognition onstart')
-
-      this.setState(
-        () => ({
-          listening: true
-        }),
-        () => {
-          this._invokeCallbacks(callbacks.start)
-        }
-      )
-    };
-
-    this.recognition.onsoundstart = () => {
-      this._invokeCallbacks(callbacks.soundstart);
-    };
-
-    this.recognition.onerror = event => {
-      console.log('recognition onerror')
-
-      this._invokeCallbacks(callbacks.error, event);
-
-      switch (event.error) {
-        case 'network':
-          this._invokeCallbacks(callbacks.errorNetwork, event);
-          break;
-        case 'not-allowed':
-        case 'service-not-allowed':
-          this.setState(
-            () => ({
-              autoRestart: false
-            })
-          )
-
-          if (new Date().getTime() - this.state.lastStartedAt < 200) {
-            this._invokeCallbacks(callbacks.errorPermissionBlocked, event);
-          } else {
-            this._invokeCallbacks(callbacks.errorPermissionDenied, event);
-          }
-          break;
-        default:
-      }
-    };
-
-    this.recognition.onend = () => {
-      console.log('recognition onend')
-
-      this.setState(
-        () => ({
-          listening: false
-        })
-      )
-
-      this._invokeCallbacks(callbacks.end);
-
-      if (this.state.autoRestart) {
-        const timeSinceLastStart =
-          new Date().getTime() - this.state.lastStartedAt;
-
-        this.setState(
-          ({ autoRestartCount }) => ({
-            autoRestartCount: autoRestartCount + 1
-          })
-        )
-
-        if (this.state.autoRestartCount % 10 === 0) {
-          if (this.state.debugState) {
-            this._logMessage('Speech Recognition is repeatedly stopping and starting. Check that you are online and have opened only one window/tab with Speech Recognition in the browser.');
-          }
-        }
-
-        if (timeSinceLastStart < 1000) {
-          setTimeout(() => {
-            this.start({
-              paused: this.state.pauseListening
-            });
-          }, 1000 - timeSinceLastStart);
-        } else {
-          this.start({
-            paused: this.state.pauseListening
-          });
-        }
-      }
-    };
-
-    this.recognition.onresult = event => {
-      console.log('recognition onresult')
-
-      if (this.state.pauseListening) {
-        if (this.state.debugState) {
-          this._logMessage('Speech heard, but recognizer is paused');
-        }
-
-        return false;
-      }
-
-      const SpeechRecognitionResult = event.results[event.resultIndex];
-
-      const results = [];
-
-      for (let k = 0; k < SpeechRecognitionResult.length; k++) {
-        results[k] = SpeechRecognitionResult[k].transcript;
-      }
-
-      this._parseResults(results);
-    };
-
-    if (resetCommands) {
-      console.log('recognition resetCommands')
-
-      this.setState(
-        () => ({
-          commandsList: []
-        })
-      )
-    }
-
-    if (Object.keys(commands).length > 0) {
-      this.addCommands(commands);
-    }
   }
 
   start = ({ paused, autoRestart, continuous }) => {
@@ -402,29 +597,43 @@ export default class Vuics extends Component {
     this.recognition.lang = language;
   }
 
-  addCommands = (commands) => {
-    if (!this.isRecognitionSupported()) {
+  addSpeechHandlers = (speechHandlers) => {
+    if (
+      !this.isRecognitionSupported() ||
+      Object.keys(speechHandlers).length === 0
+    ) {
       return
     }
 
-    Object.keys(commands).forEach((key) => {
-      console.log('addCommands key: ', key)
+    Object.keys(speechHandlers).forEach((key) => {
+      console.log('addSpeechHandlers key: ', key)
 
-      const command = commands[key];
+      const speechHandler = speechHandlers[key]
 
-      if (typeof command === 'function') {
-        this._registerCommand(this._commandToRegExp(key), command, key);
-      } else if (typeof command === 'object' && command.regexp instanceof RegExp) {
-        this._registerCommand(new RegExp(command.regexp.source, 'i'), command.callback, key);
+      if (typeof speechHandler === 'function') {
+        this._registerCommand(
+          this._commandToRegExp(key),
+          speechHandler,
+          key
+        )
+      } else if (
+        typeof speechHandler === 'object' &&
+        speechHandler.regexp instanceof RegExp
+      ) {
+        this._registerCommand(
+          new RegExp(speechHandler.regexp.source, 'i'),
+          speechHandler.callback,
+          key
+        )
       } else {
         if (this.state.debugState) {
-          this._logMessage('Can not register command: %c' + key, debugStyle);
+          this._logMessage('Can not register speechHandler: %c' + key, debugStyle)
         }
       }
     })
   }
 
-  removeCommands = (commandsToRemove) => {
+  removeSpeechHandlers = (commandsToRemove) => {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -445,11 +654,11 @@ export default class Vuics extends Component {
           commandsList: commandsList.filter(command => {
             for (let i = 0; i < arrayCommandsToRemove.length; i++) {
               if (arrayCommandsToRemove[i] === command.originalPhrase) {
-                return false;
+                return false
               }
             }
 
-            return true;
+            return true
           })
         })
       )
@@ -465,12 +674,22 @@ export default class Vuics extends Component {
 
     if (
       typeof cb === 'function' &&
-      callbacks[type] !== undefined
+      this.state.recognitionCallbacks[type] !== undefined
     ) {
-      callbacks[type].push({
-        callback: cb,
-        context: context || this
-      });
+      this.setState(
+        ({ recognitionCallbacks }) => ({
+          recognitionCallbacks: {
+            ...recognitionCallbacks,
+            [type]: [
+              ...recognitionCallbacks[type],
+              {
+                callback: cb,
+                context: context || this
+              }
+            ]
+          }
+        })
+      )
     }
   }
 
@@ -479,12 +698,26 @@ export default class Vuics extends Component {
       return
     }
 
-    Object.keys(callbacks).forEach((callbackType) => {
+    Object.keys(this.state.recognitionCallbacks).forEach((callbackType) => {
       if (type === undefined || type === callbackType) {
         if (callback === undefined) {
-          callbacks[callbackType] = [];
+          this.setState(
+            ({ recognitionCallbacks }) => ({
+              recognitionCallbacks: {
+                ...recognitionCallbacks,
+                [callbackType]: []
+              }
+            })
+          )
         } else {
-          callbacks[callbackType] = callbacks[callbackType].filter((cb) => cb.callback !== callback);
+          this.setState(
+            ({ recognitionCallbacks }) => ({
+              recognitionCallbacks: {
+                ...recognitionCallbacks,
+                [callbackType]: recognitionCallbacks[callbackType].filter((cb) => cb.callback !== callback)
+              }
+            })
+          )
         }
       }
     })
@@ -515,17 +748,21 @@ export default class Vuics extends Component {
         }
       }
 
-      return;
+      return
     }
 
-    this._parseResults(!Array.isArray(sentences) ? [sentences] : sentences);
+    this._parseResults(
+      !Array.isArray(sentences)
+        ? [sentences]
+        : sentences
+    )
   }
 
   isRecognitionSupported = () => {
     if (!SpeechRecognition) {
-      this._logMessage('SpeechRecognition does not supported by your browser!');
+      this._logMessage('SpeechRecognition does not supported by your browser!')
 
-      return false;
+      return false
     } else {
       return true
     }
@@ -545,10 +782,11 @@ export default class Vuics extends Component {
     return new RegExp('^' + command + '$', 'i');
   }
 
-  _invokeCallbacks = (callbacks, ...args) => {
-    callbacks.forEach((callback) => {
-      callback.callback.apply(callback.context, args);
-    });
+  _invokeRecognitionCallbacks = (recognitionCallbacks, ...args) => {
+    recognitionCallbacks.length > 0 &&
+    recognitionCallbacks.forEach((callbackType) => {
+      callbackType(...args)
+    })
   }
 
   _logMessage = (text, extraParameters) => {
@@ -560,7 +798,6 @@ export default class Vuics extends Component {
   }
 
   _registerCommand = (command, callback, originalPhrase) => {
-    console.log('_registerCommand command: ', command, ' callback: ', callback, ' originalPhrase: ', originalPhrase)
     this.setState(
       ({ commandsList }) => ({
         commandsList: [
@@ -579,9 +816,32 @@ export default class Vuics extends Component {
   }
 
   _parseResults = (results) => {
-    this._invokeCallbacks(
-      callbacks.result,
-      results
+    this._invokeRecognitionCallbacks(
+      this.state.recognitionCallbacks.result,
+      results,
+      {
+        isSynthesizerSupported: () => !!synth,
+        isRecognitionSupported: this.isRecognitionSupported,
+
+        speak: this.speak,
+
+        state: this.state.state,
+        transcript: this.state.transcript,
+        message: this.state.message,
+        recognizing: this.state.recognizing,
+        listening: this.state.listening,
+
+        onClick: this.onClick,
+
+        start: this.start,
+        abort: this.abort,
+        pause: this.pause,
+        resume: this.resume,
+        debug: this.debug,
+        setLanguage: this.setLanguage,
+        isListening: this.isListening,
+        trigger: this.trigger
+      }
     );
 
     for (let i = 0; i < results.length; i++) {
@@ -633,11 +893,36 @@ export default class Vuics extends Component {
             trigger: this.trigger
           }]); // eslint-disable-line babel/no-invalid-this
 
-          this._invokeCallbacks(
-            callbacks.resultMatch,
-            commandText,
-            currentCommand.originalPhrase,
-            results
+          this._invokeRecognitionCallbacks(
+            this.state.recognitionCallbacks.resultMatch,
+            {
+              commandText,
+              originalPhrase: currentCommand.originalPhrase,
+              results
+            },
+            {
+              isSynthesizerSupported: () => !!synth,
+              isRecognitionSupported: this.isRecognitionSupported,
+
+              speak: this.speak,
+
+              state: this.state.state,
+              transcript: this.state.transcript,
+              message: this.state.message,
+              recognizing: this.state.recognizing,
+              listening: this.state.listening,
+
+              onClick: this.onClick,
+
+              start: this.start,
+              abort: this.abort,
+              pause: this.pause,
+              resume: this.resume,
+              debug: this.debug,
+              setLanguage: this.setLanguage,
+              isListening: this.isListening,
+              trigger: this.trigger
+            }
           );
 
           return;
@@ -645,7 +930,33 @@ export default class Vuics extends Component {
       }
     }
 
-    this._invokeCallbacks(callbacks.resultNoMatch, results);
+    this._invokeRecognitionCallbacks(
+      this.state.recognitionCallbacks.resultNoMatch,
+      results,
+      {
+        isSynthesizerSupported: () => !!synth,
+        isRecognitionSupported: this.isRecognitionSupported,
+
+        speak: this.speak,
+
+        state: this.state.state,
+        transcript: this.state.transcript,
+        message: this.state.message,
+        recognizing: this.state.recognizing,
+        listening: this.state.listening,
+
+        onClick: this.onClick,
+
+        start: this.start,
+        abort: this.abort,
+        pause: this.pause,
+        resume: this.resume,
+        debug: this.debug,
+        setLanguage: this.setLanguage,
+        isListening: this.isListening,
+        trigger: this.trigger
+      }
+    );
   }
 
   setCanvasDimensions = () => {
@@ -801,36 +1112,46 @@ export default class Vuics extends Component {
       () => ({
         transcript: data.inputTranscript,
         message: data.message
-      })
+      }),
+      () => {
+        if (!data.intentName) {
+          return
+        }
+        if (
+          typeof this.props.recognitionCallbacks[data.intentName] === 'function'
+        ) {
+          this.props.recognitionCallbacks[data.intentName](data, {
+            isSynthesizerSupported: () => !!synth,
+            isRecognitionSupported: this.isRecognitionSupported,
+
+            speak: this.speak,
+
+            state: this.state.state,
+            transcript: data.inputTranscript,
+            message: data.message,
+            recognizing: this.state.recognizing,
+            listening: this.state.listening,
+
+            onClick: this.onClick,
+
+            start: this.start,
+            abort: this.abort,
+            pause: this.pause,
+            resume: this.resume,
+            debug: this.debug,
+            setLanguage: this.setLanguage,
+            addSpeechHandlers: this.addSpeechHandlers,
+            removeSpeechHandlers: this.removeSpeechHandlers,
+            addCallback: this.addCallback,
+            removeCallback: this.removeCallback,
+            isListening: this.isListening,
+            trigger: this.trigger
+          })
+        } else {
+          console.error('Intent ', data.intentName, ' have no callback attached!')
+        }
+      }
     )
-
-    this.props.onConversationData(data, {
-      isSynthesizerSupported: () => !!synth,
-      isRecognitionSupported: this.isRecognitionSupported,
-
-      speak: this.speak,
-
-      state: this.state.state,
-      transcript: this.state.transcript,
-      message: this.state.message,
-      recognizing: this.state.recognizing,
-      listening: this.state.listening,
-
-      onClick: this.onClick,
-
-      start: this.start,
-      abort: this.abort,
-      pause: this.pause,
-      resume: this.resume,
-      debug: this.debug,
-      setLanguage: this.setLanguage,
-      addCommands: this.addCommands,
-      removeCommands: this.removeCommands,
-      addCallback: this.addCallback,
-      removeCallback: this.removeCallback,
-      isListening: this.isListening,
-      trigger: this.trigger
-    })
   }
 
   onError = error => {
@@ -889,8 +1210,8 @@ export default class Vuics extends Component {
         resume: this.resume,
         debug: this.debug,
         setLanguage: this.setLanguage,
-        addCommands: this.addCommands,
-        removeCommands: this.removeCommands,
+        addSpeechHandlers: this.addSpeechHandlers,
+        removeSpeechHandlers: this.removeSpeechHandlers,
         addCallback: this.addCallback,
         removeCallback: this.removeCallback,
         isListening: this.isListening,

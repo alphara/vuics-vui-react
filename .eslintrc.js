@@ -1,38 +1,36 @@
 module.exports = {
   'parser': 'babel-eslint',
   'extends': [
-    'react-tools',
     'eslint:recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
     'plugin:react/recommended',
-    'plugin:react-redux/recommended',
     'plugin:react-perf/recommended',
     'standard',
     'standard-react',
     'plugin:jsx-a11y/recommended',
-    'plugin:css-modules/recommended',
-    'plugin:reselect/recommended'
+    'plugin:jest/recommended'
   ],
   'plugins': [
     'babel',
     'import',
-    'graphql',
     'jsx-a11y',
     'html',
     'promise',
     'react',
-    'react-redux',
     'react-perf',
     'standard',
-    'css-modules',
     'xss',
     'no-inferred-method-name',
     'react-functional-set-state',
-    'reselect'
+    'jest'
   ],
   'env': {
+    'node': true,
     'browser': true,
+    'commonjs': true,
+    'worker': true,
+    'jest': true,
     'es6': true
   },
   'globals': {
@@ -43,26 +41,17 @@ module.exports = {
   },
   'settings': {
     'ecmascript': 6,
-    'import/resolver': 'webpack'
+    'import/resolver': 'webpack',
+    "react": {
+      // "createClass": "createReactClass", // Regex for Component Factory to use,
+                                         // default to "createReactClass"
+      "pragma": "React",  // Pragma to use, default to "React"
+      "version": "^16.5.2", // React version, default to the latest React stable release
+      // "flowVersion": "0.53" // Flow version
+    }
   },
   'rules': {
-    // "graphql/template-strings": ['error', {
-    //   // Import default settings for your GraphQL client. Supported values:
-    //   // 'apollo', 'relay', 'lokka', 'literal'
-    //   env: 'literal',
-    //
-    //   // Import your schema JSON here
-    //   // schemaJson: require('src/graphql/user.gql'),
-    //
-    //   // OR provide absolute path to your schema JSON
-    //   // schemaJsonFilepath: path.resolve(__dirname, './schema.json'),
-    //
-    //   // OR provide the schema in the Schema Language format
-    //   // schemaString: printSchema(schema),
-    //
-    //   // tagName is gql by default
-    // }],
-
+    'camelcase': 'off',
     // 'template-curly-spacing' : 'off',
     // indent : 'off',
     'react-functional-set-state/no-this-state-props': 2,
@@ -79,12 +68,12 @@ module.exports = {
     // 'react/no-typos': 'off',
     'max-len': 'off',
     'no-nested-ternary': 'off',
-    'camelcase': [
-      2,
-      {
-        'properties': 'never'
-      }
-    ],
+    // 'camelcase': [
+    //   2,
+    //   {
+    //     'properties': 'never'
+    //   }
+    // ],
     'react-redux/prefer-separate-component-file': 'off',
     'react/destructuring-assignment': 'off',
     'babel/no-invalid-this': 1,

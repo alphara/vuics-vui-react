@@ -6,11 +6,10 @@
   "private": true,
   "dependencies": {
     "@vuics/vui-react": "file:../..",
-    "axios": "^0.18.0",
     "prop-types": "^15.6.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
-    "react-scripts": "^1.1.4",
+    "react-scripts": "^2.0.5",
     "semantic-ui-css": "^2.4.0",
     "semantic-ui-react": "^0.82.5",
     "webworkify-webpack": "^2.1.3"
@@ -19,11 +18,37 @@
     "start": "HTTPS=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "npx eslint ./src --fix"
   },
   "devDependencies": {
-    "ajv": "^5.5.2",
-    "babel-eslint": "^7.2.3",
-    "eslint": "^4.19.1"
-  }
+    "ajv": "^6.5.4",
+    "axios": "^0.18.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-config-standard-jsx": "^6.0.2",
+    "eslint-config-standard-react": "^7.0.2",
+    "eslint-import-resolver-webpack": "0.10.1",
+    "eslint-loader": "2.1.1",
+    "eslint-plugin-babel": "5.2.1",
+    "eslint-plugin-html": "4.0.6",
+    "eslint-plugin-import": "2.14.0",
+    "eslint-plugin-jest": "^21.25.1",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-no-inferred-method-name": "1.0.2",
+    "eslint-plugin-node": "7.0.1",
+    "eslint-plugin-promise": "4.0.1",
+    "eslint-plugin-react": "7.11.1",
+    "eslint-plugin-react-functional-set-state": "1.2.1",
+    "eslint-plugin-react-perf": "2.0.9",
+    "eslint-plugin-react-redux": "2.3.0",
+    "eslint-plugin-reselect": "6.6.0",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-xss": "0.1.9"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

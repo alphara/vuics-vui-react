@@ -68,7 +68,7 @@ export default class Vuics extends Component {
       this.voices = synth.getVoices()
 
       if (synth.onvoiceschanged !== undefined) {
-        synth.onvoiceschanged = this.onVoicesChanged
+        synth.onvoiceschanged = this._onVoicesChanged
       }
     } else {
       this._logMessage('SpeechSynthezis does not supported by your browser!');
@@ -99,291 +99,15 @@ export default class Vuics extends Component {
       this.recognition.lang = props.locale;
       // this.recognition.lang = 'ru-RU';
 
-      this.recognition.onstart = () => {
-        console.log('recognition onstart')
+      this.recognition.onstart = this._onRecognitionStart
 
-        this.setState(
-          () => ({
-            listening: true
-          }),
-          () => {
-            this._invokeRecognitionCallbacks(
-              this.state.recognitionCallbacks.start,
-              {
-                isSynthesizerSupported: () => !!synth,
-                isRecognitionSupported: this.isRecognitionSupported,
+      this.recognition.onsoundstart = this._onRecognitionSoundStart
 
-                speak: this.speak,
+      this.recognition.onerror = this._onRecognitionError
 
-                state: this.state.state,
-                transcript: this.state.transcript,
-                message: this.state.message,
-                recognizing: this.state.recognizing,
-                listening: this.state.listening,
+      this.recognition.onend = this._onRecognitionEnd
 
-                onClick: this.onClick,
-
-                start: this.start,
-                abort: this.abort,
-                pause: this.pause,
-                resume: this.resume,
-                debug: this.debug,
-                setLanguage: this.setLanguage,
-                isListening: this.isListening,
-                trigger: this.trigger
-              }
-            )
-          }
-        )
-      }
-
-      this.recognition.onsoundstart = () => {
-        this._invokeRecognitionCallbacks(
-          this.state.recognitionCallbacks.soundstart,
-          {
-            isSynthesizerSupported: () => !!synth,
-            isRecognitionSupported: this.isRecognitionSupported,
-
-            speak: this.speak,
-
-            state: this.state.state,
-            transcript: this.state.transcript,
-            message: this.state.message,
-            recognizing: this.state.recognizing,
-            listening: this.state.listening,
-
-            onClick: this.onClick,
-
-            start: this.start,
-            abort: this.abort,
-            pause: this.pause,
-            resume: this.resume,
-            debug: this.debug,
-            setLanguage: this.setLanguage,
-            isListening: this.isListening,
-            trigger: this.trigger
-          }
-        )
-      }
-
-      this.recognition.onerror = event => {
-        console.log('recognition onerror')
-
-        this._invokeRecognitionCallbacks(
-          this.state.recognitionCallbacks.error,
-          event,
-          {
-            isSynthesizerSupported: () => !!synth,
-            isRecognitionSupported: this.isRecognitionSupported,
-
-            speak: this.speak,
-
-            state: this.state.state,
-            transcript: this.state.transcript,
-            message: this.state.message,
-            recognizing: this.state.recognizing,
-            listening: this.state.listening,
-
-            onClick: this.onClick,
-
-            start: this.start,
-            abort: this.abort,
-            pause: this.pause,
-            resume: this.resume,
-            debug: this.debug,
-            setLanguage: this.setLanguage,
-            isListening: this.isListening,
-            trigger: this.trigger
-          }
-        )
-
-        switch (event.error) {
-          case 'network':
-            this._invokeRecognitionCallbacks(
-              this.state.recognitionCallbacks.errorNetwork,
-              event,
-              {
-                isSynthesizerSupported: () => !!synth,
-                isRecognitionSupported: this.isRecognitionSupported,
-
-                speak: this.speak,
-
-                state: this.state.state,
-                transcript: this.state.transcript,
-                message: this.state.message,
-                recognizing: this.state.recognizing,
-                listening: this.state.listening,
-
-                onClick: this.onClick,
-
-                start: this.start,
-                abort: this.abort,
-                pause: this.pause,
-                resume: this.resume,
-                debug: this.debug,
-                setLanguage: this.setLanguage,
-                isListening: this.isListening,
-                trigger: this.trigger
-              }
-            )
-            break
-          case 'not-allowed':
-          case 'service-not-allowed':
-            this.setState(
-              () => ({
-                autoRestart: false
-              })
-            )
-
-            if (new Date().getTime() - this.state.lastStartedAt < 200) {
-              this._invokeRecognitionCallbacks(
-                this.state.recognitionCallbacks.errorPermissionBlocked,
-                event,
-                {
-                  isSynthesizerSupported: () => !!synth,
-                  isRecognitionSupported: this.isRecognitionSupported,
-
-                  speak: this.speak,
-
-                  state: this.state.state,
-                  transcript: this.state.transcript,
-                  message: this.state.message,
-                  recognizing: this.state.recognizing,
-                  listening: this.state.listening,
-
-                  onClick: this.onClick,
-
-                  start: this.start,
-                  abort: this.abort,
-                  pause: this.pause,
-                  resume: this.resume,
-                  debug: this.debug,
-                  setLanguage: this.setLanguage,
-                  isListening: this.isListening,
-                  trigger: this.trigger
-                }
-              )
-            } else {
-              this._invokeRecognitionCallbacks(
-                this.state.recognitionCallbacks.errorPermissionDenied,
-                event,
-                {
-                  isSynthesizerSupported: () => !!synth,
-                  isRecognitionSupported: this.isRecognitionSupported,
-
-                  speak: this.speak,
-
-                  state: this.state.state,
-                  transcript: this.state.transcript,
-                  message: this.state.message,
-                  recognizing: this.state.recognizing,
-                  listening: this.state.listening,
-
-                  onClick: this.onClick,
-
-                  start: this.start,
-                  abort: this.abort,
-                  pause: this.pause,
-                  resume: this.resume,
-                  debug: this.debug,
-                  setLanguage: this.setLanguage,
-                  isListening: this.isListening,
-                  trigger: this.trigger
-                }
-              )
-            }
-            break;
-          default:
-        }
-      }
-
-      this.recognition.onend = () => {
-        console.log('recognition onend')
-
-        this.setState(
-          () => ({
-            listening: false
-          })
-        )
-
-        this._invokeRecognitionCallbacks(
-          this.state.recognitionCallbacks.end,
-          {
-            isSynthesizerSupported: () => !!synth,
-            isRecognitionSupported: this.isRecognitionSupported,
-
-            speak: this.speak,
-
-            state: this.state.state,
-            transcript: this.state.transcript,
-            message: this.state.message,
-            recognizing: this.state.recognizing,
-            listening: this.state.listening,
-
-            onClick: this.onClick,
-
-            start: this.start,
-            abort: this.abort,
-            pause: this.pause,
-            resume: this.resume,
-            debug: this.debug,
-            setLanguage: this.setLanguage,
-            isListening: this.isListening,
-            trigger: this.trigger
-          }
-        )
-
-        if (this.state.autoRestart) {
-          const timeSinceLastStart =
-            new Date().getTime() - this.state.lastStartedAt;
-
-          this.setState(
-            ({ autoRestartCount }) => ({
-              autoRestartCount: autoRestartCount + 1
-            })
-          )
-
-          if (this.state.autoRestartCount % 10 === 0) {
-            if (this.state.debugState) {
-              this._logMessage('Speech Recognition is repeatedly stopping and starting. Check that you are online and have opened only one window/tab with Speech Recognition in the browser.');
-            }
-          }
-
-          if (timeSinceLastStart < 1000) {
-            setTimeout(() => {
-              this.start({
-                paused: this.state.pauseListening
-              });
-            }, 1000 - timeSinceLastStart);
-          } else {
-            this.start({
-              paused: this.state.pauseListening
-            });
-          }
-        }
-      }
-
-      this.recognition.onresult = event => {
-        console.log('recognition onresult')
-
-        if (this.state.pauseListening) {
-          if (this.state.debugState) {
-            this._logMessage('Speech heard, but recognizer is paused')
-          }
-
-          return false
-        }
-
-        const SpeechRecognitionResult = event.results[event.resultIndex];
-
-        const results = [];
-
-        for (let k = 0; k < SpeechRecognitionResult.length; k++) {
-          results[k] = SpeechRecognitionResult[k].transcript
-        }
-
-        this._parseResults(results)
-      };
+      this.recognition.onresult = this._onRecognitionResult
     } else {
       this._logMessage('SpeechRecognition does not supported by your browser!');
     }
@@ -445,7 +169,163 @@ export default class Vuics extends Component {
     window.removeEventListener('resize', this.setCanvasDimensions)
   }
 
-  onVoicesChanged = () => {
+  getApi = () => ({
+    isSynthesizerSupported: () => !!synth,
+    isRecognitionSupported: this.isRecognitionSupported,
+
+    speak: this.speak,
+
+    state: this.state.state,
+    transcript: this.state.transcript,
+    message: this.state.message,
+    recognizing: this.state.recognizing,
+    listening: this.state.listening,
+
+    onClick: this.onClick,
+
+    start: this.start,
+    abort: this.abort,
+    pause: this.pause,
+    resume: this.resume,
+    debug: this.debug,
+    setLanguage: this.setLanguage,
+    isListening: this.isListening,
+    trigger: this.trigger
+  })
+
+  _onRecognitionStart = () => {
+    console.log('recognition onstart')
+
+    this.setState(
+      () => ({
+        listening: true
+      }),
+      () => {
+        this._invokeRecognitionCallbacks(
+          this.state.recognitionCallbacks.start,
+          this.getApi()
+        )
+      }
+    )
+  }
+
+  _onRecognitionSoundStart = () => {
+    this._invokeRecognitionCallbacks(
+      this.state.recognitionCallbacks.soundstart,
+      this.getApi()
+    )
+  }
+
+  _onRecognitionError = event => {
+    console.log('recognition onerror')
+
+    this._invokeRecognitionCallbacks(
+      this.state.recognitionCallbacks.error,
+      event,
+      this.getApi()
+    )
+
+    switch (event.error) {
+      case 'network':
+        this._invokeRecognitionCallbacks(
+          this.state.recognitionCallbacks.errorNetwork,
+          event,
+          this.getApi()
+        )
+        break
+      case 'not-allowed':
+      case 'service-not-allowed':
+        this.setState(
+          () => ({
+            autoRestart: false
+          })
+        )
+
+        if (new Date().getTime() - this.state.lastStartedAt < 200) {
+          this._invokeRecognitionCallbacks(
+            this.state.recognitionCallbacks.errorPermissionBlocked,
+            event,
+            this.getApi()
+          )
+        } else {
+          this._invokeRecognitionCallbacks(
+            this.state.recognitionCallbacks.errorPermissionDenied,
+            event,
+            this.getApi()
+          )
+        }
+        break;
+      default:
+    }
+  }
+
+  _onRecognitionEnd = () => {
+    console.log('recognition onend')
+
+    this.setState(
+      () => ({
+        listening: false
+      })
+    )
+
+    this._invokeRecognitionCallbacks(
+      this.state.recognitionCallbacks.end,
+      this.getApi()
+    )
+
+    if (this.state.autoRestart) {
+      const timeSinceLastStart =
+        new Date().getTime() - this.state.lastStartedAt;
+
+      this.setState(
+        ({ autoRestartCount }) => ({
+          autoRestartCount: autoRestartCount + 1
+        })
+      )
+
+      if (this.state.autoRestartCount % 10 === 0) {
+        if (this.state.debugState) {
+          this._logMessage('Speech Recognition is repeatedly stopping and starting. Check that you are online and have opened only one window/tab with Speech Recognition in the browser.');
+        }
+      }
+
+      if (timeSinceLastStart < 1000) {
+        setTimeout(() => {
+          this.start({
+            paused: this.state.pauseListening
+          });
+        }, 1000 - timeSinceLastStart);
+      } else {
+        this.start({
+          paused: this.state.pauseListening
+        });
+      }
+    }
+  }
+
+  _onRecognitionResult = event => {
+    console.log('recognition onresult')
+
+    if (this.state.pauseListening) {
+      if (this.state.debugState) {
+        this._logMessage('Speech heard, but recognizer is paused')
+      }
+
+      return false
+    }
+
+    const SpeechRecognitionResult = event.results[event.resultIndex];
+
+    const results = [];
+
+    for (let k = 0; k < SpeechRecognitionResult.length; k++) {
+      results[k] = SpeechRecognitionResult[k].transcript
+    }
+
+    this._parseResults(results)
+  }
+
+  _onVoicesChanged = () => {
     this.voices = synth.getVoices();
   }
 
@@ -819,29 +699,7 @@ export default class Vuics extends Component {
     this._invokeRecognitionCallbacks(
       this.state.recognitionCallbacks.result,
       results,
-      {
-        isSynthesizerSupported: () => !!synth,
-        isRecognitionSupported: this.isRecognitionSupported,
-
-        speak: this.speak,
-
-        state: this.state.state,
-        transcript: this.state.transcript,
-        message: this.state.message,
-        recognizing: this.state.recognizing,
-        listening: this.state.listening,
-
-        onClick: this.onClick,
-
-        start: this.start,
-        abort: this.abort,
-        pause: this.pause,
-        resume: this.resume,
-        debug: this.debug,
-        setLanguage: this.setLanguage,
-        isListening: this.isListening,
-        trigger: this.trigger
-      }
+      this.getApi()
     );
 
     for (let i = 0; i < results.length; i++) {
@@ -869,29 +727,7 @@ export default class Vuics extends Component {
 
           console.log('parameters: ', parameters)
 
-          currentCommand.callback.apply(this, [parameters, {
-            isSynthesizerSupported: () => !!synth,
-            isRecognitionSupported: this.isRecognitionSupported,
-
-            speak: this.speak,
-
-            state: this.state.state,
-            transcript: this.state.transcript,
-            message: this.state.message,
-            recognizing: this.state.recognizing,
-            listening: this.state.listening,
-
-            onClick: this.onClick,
-
-            start: this.start,
-            abort: this.abort,
-            pause: this.pause,
-            resume: this.resume,
-            debug: this.debug,
-            setLanguage: this.setLanguage,
-            isListening: this.isListening,
-            trigger: this.trigger
-          }]); // eslint-disable-line babel/no-invalid-this
+          currentCommand.callback.apply(this, [parameters, this.getApi()]); // eslint-disable-line babel/no-invalid-this
 
           this._invokeRecognitionCallbacks(
             this.state.recognitionCallbacks.resultMatch,
@@ -900,29 +736,7 @@ export default class Vuics extends Component {
               originalPhrase: currentCommand.originalPhrase,
               results
             },
-            {
-              isSynthesizerSupported: () => !!synth,
-              isRecognitionSupported: this.isRecognitionSupported,
-
-              speak: this.speak,
-
-              state: this.state.state,
-              transcript: this.state.transcript,
-              message: this.state.message,
-              recognizing: this.state.recognizing,
-              listening: this.state.listening,
-
-              onClick: this.onClick,
-
-              start: this.start,
-              abort: this.abort,
-              pause: this.pause,
-              resume: this.resume,
-              debug: this.debug,
-              setLanguage: this.setLanguage,
-              isListening: this.isListening,
-              trigger: this.trigger
-            }
+            this.getApi()
           );
 
           return;
@@ -933,29 +747,7 @@ export default class Vuics extends Component {
     this._invokeRecognitionCallbacks(
       this.state.recognitionCallbacks.resultNoMatch,
       results,
-      {
-        isSynthesizerSupported: () => !!synth,
-        isRecognitionSupported: this.isRecognitionSupported,
-
-        speak: this.speak,
-
-        state: this.state.state,
-        transcript: this.state.transcript,
-        message: this.state.message,
-        recognizing: this.state.recognizing,
-        listening: this.state.listening,
-
-        onClick: this.onClick,
-
-        start: this.start,
-        abort: this.abort,
-        pause: this.pause,
-        resume: this.resume,
-        debug: this.debug,
-        setLanguage: this.setLanguage,
-        isListening: this.isListening,
-        trigger: this.trigger
-      }
+      this.getApi()
     );
   }
 
@@ -1118,9 +910,9 @@ export default class Vuics extends Component {
           return
         }
         if (
-          typeof this.props.recognitionCallbacks[data.intentName] === 'function'
+          typeof this.props.intentHandlers[data.intentName] === 'function'
         ) {
-          this.props.recognitionCallbacks[data.intentName](data, {
+          this.props.intentHandlers[data.intentName](data, {
             isSynthesizerSupported: () => !!synth,
             isRecognitionSupported: this.isRecognitionSupported,
 
@@ -1165,6 +957,8 @@ export default class Vuics extends Component {
       this.state.state === 'Speaking'
     ) {
       console.log('this.state.state: ', this.state.state)
+      this.conversation &&
+      typeof this.conversation.stopRecord === 'function' &&
       this.conversation.stopRecord()
       return
     }

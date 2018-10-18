@@ -50,10 +50,10 @@ export default class App extends Component {
 
     speak({
       phrase: 'Listening',
-      onError: (event) => {
+      onSpeechError: (event) => {
 
       },
-      onEnd: (event) => {
+      onSpeechEnd: (event) => {
 
       },
       voiceIndex: 0,
@@ -99,10 +99,10 @@ export default class App extends Component {
 
     speak({
       phrase: 'Talk to you soon',
-      onError: (event) => {
+      onSpeechError: (event) => {
 
       },
-      onEnd: (event) => {
+      onSpeechEnd: (event) => {
 
       },
       voiceIndex: 0,
@@ -219,7 +219,7 @@ export default class App extends Component {
   recognitionCallbacks = {
     start: [
       (api) => {
-        console.log('recognitionCallbacks start api: ', api)
+        // console.log('recognitionCallbacks start api: ', api)
       }
     ],
     end: [
@@ -249,22 +249,22 @@ export default class App extends Component {
     ],
     error: [
       (event, api) => {
-        console.log('error event', event)
+        // console.log('error event', event)
       }
     ],
     errorNetwork: [
       (event, api) => {
-        console.log('errorNetwork event', event)
+        // console.log('errorNetwork event', event)
       }
     ],
     errorPermissionBlocked: [
       (event, api) => {
-        console.log('errorPermissionBlocked event', event)
+        // console.log('errorPermissionBlocked event', event)
       }
     ],
     errorPermissionDenied: [
       (event, api) => {
-        console.log('errorPermissionDenied event', event)
+        // console.log('errorPermissionDenied event', event)
       }
     ]
   }

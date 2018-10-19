@@ -38,7 +38,7 @@ export default class App extends Component {
     // listening, // bool
     //
     // start, // func
-    abort, // func
+    abort // func
     // pause, // func
     // resume, // func
     // debug, // func
@@ -87,7 +87,7 @@ export default class App extends Component {
     // listening, // bool
     //
     // start, // func
-    abort, // func
+    abort // func
     // pause, // func
     // resume, // func
     // debug, // func
@@ -115,7 +115,7 @@ export default class App extends Component {
 
   hello = (data, api) => {
     const {
-      intentName, // string
+      intentName // string
       // audioStream, // ArrayBuffer
       // contentType, // string
       // dialogState, // string
@@ -140,7 +140,7 @@ export default class App extends Component {
       // start, // func
       // abort, // func
       // pause, // func
-      resume, // func
+      resume // func
       // debug, // func
       // setLanguage, // func
       // addSpeechHandlers, // func
@@ -158,7 +158,7 @@ export default class App extends Component {
 
   howareyou = (data, api) => {
     const {
-      intentName, // string
+      intentName // string
       // audioStream, // ArrayBuffer
       // contentType, // string
       // dialogState, // string
@@ -183,7 +183,7 @@ export default class App extends Component {
       // start, // func
       // abort, // func
       // pause, // func
-      resume, // func
+      resume // func
       // debug, // func
       // setLanguage, // func
       // addSpeechHandlers, // func
@@ -270,145 +270,145 @@ export default class App extends Component {
   }
 
   render = () => (
-      <VuicsProvider
-        vuicsVuiId='VuicsHome'
+    <VuicsProvider
+      vuicsVuiId='VuicsHome'
 
-        fillStyle='rgb(27,28,29)'
-        lineWidth={2}
-        strokeStyle='rgb(33,186,70)'
-        locale='en_US'
-        speechHandlers={this.speechHandlers}
-        intentHandlers={this.intentHandlers}
-        recognitionCallbacks={this.recognitionCallbacks}
-      >
-        <VuicsConsumer>
-          {
-            ({
-              buttonRef, // object
-              onClick, // func
+      fillStyle='rgb(27,28,29)'
+      lineWidth={2}
+      strokeStyle='rgb(33,186,70)'
+      locale='en_US'
+      speechHandlers={this.speechHandlers}
+      intentHandlers={this.intentHandlers}
+      recognitionCallbacks={this.recognitionCallbacks}
+    >
+      <VuicsConsumer>
+        {
+          ({
+            buttonRef, // object
+            onClick, // func
 
-              state, // string
-              transcript, // string
-              message, // string
+            state, // string
+            transcript, // string
+            message, // string
 
-              recognizing, // bool
-              listening, // bool
+            recognizing, // bool
+            listening, // bool
 
-              speak, // func
+            speak, // func
 
-              isSynthesizerSupported, // func
-              isRecognitionSupported, // func
+            isSynthesizerSupported, // func
+            isRecognitionSupported, // func
 
-              start, // func
-              abort, // func
-              pause, // func
-              resume, // func
-              debug, // func
-              setLanguage, // func
-              addSpeechHandlers, // func
-              removeSpeechHandlers, // func
-              addCallback, // func
-              removeCallback, // func
-              isListening, // func
-              trigger // func
-            }) => (
-              <div>
-                <Button
-                  onClick={() => {
-                    if (isSynthesizerSupported()) {
-                      speak({
-                        phrase: 'Hello!   I am your Voice User Interface.',
-                        onError: (event) => {
+            start, // func
+            abort, // func
+            pause, // func
+            resume, // func
+            debug, // func
+            setLanguage, // func
+            addSpeechHandlers, // func
+            removeSpeechHandlers, // func
+            addCallback, // func
+            removeCallback, // func
+            isListening, // func
+            trigger // func
+          }) => (
+            <div>
+              <Button
+                onClick={() => {
+                  if (isSynthesizerSupported()) {
+                    speak({
+                      phrase: 'Hello!   I am your Voice User Interface.',
+                      onError: (event) => {
 
-                        },
-                        onEnd: (event) => {
+                      },
+                      onEnd: (event) => {
 
-                        },
-                        voiceIndex: 0,
-                        pitch: 1,
-                        rate: 1
-                      })
-                    }
-                  }}
-                  color='blue'
-                >
+                      },
+                      voiceIndex: 0,
+                      pitch: 1,
+                      rate: 1
+                    })
+                  }
+                }}
+                color='blue'
+              >
                   Speak
-                </Button>
+              </Button>
 
-                <Radio
-                  toggle
-                  label={
-                    isRecognitionSupported()
-                      ? 'Wake-Word "Hello Voice" '
-                      : 'No browser support of Wake-Word '
+              <Radio
+                toggle
+                label={
+                  isRecognitionSupported()
+                    ? 'Wake-Word "Hello Voice" '
+                    : 'No browser support of Wake-Word '
+                }
+                disabled={!isRecognitionSupported()}
+                checked={recognizing}
+                onChange={(event, data) => {
+                  if (data.checked) {
+                    speak({
+                      phrase: "I'm listening for Hello voice.",
+                      voiceIndex: 0,
+                      pitch: 1,
+                      rate: 1,
+                      onSpeechEnd: () => {
+                        start({
+                          paused: false
+                        })
+                      },
+                      onSpeechError: () => {
+
+                      }
+                    })
+                  } else {
+                    abort();
+
+                    speak({
+                      phrase: "I'm not listening anymore.",
+                      voiceIndex: 0,
+                      pitch: 1,
+                      rate: 1,
+                      onSpeechEnd: () => {
+
+                      },
+                      onSpeechError: () => {
+
+                      }
+                    })
                   }
-                  disabled={!isRecognitionSupported()}
-                  checked={recognizing}
-                  onChange={(event, data) => {
-                    if (data.checked) {
-                      speak({
-                        phrase: "I'm listening for Hello voice.",
-                        voiceIndex: 0,
-                        pitch: 1,
-                        rate: 1,
-                        onSpeechEnd: () => {
-                          start({
-                            paused: false
-                          })
-                        },
-                        onSpeechError: () => {
+                }}
+              />
 
-                        }
-                      })
-                    } else {
-                      abort();
+              <ButtonDefault
+                className='button'
+              />
 
-                      speak({
-                        phrase: "I'm not listening anymore.",
-                        voiceIndex: 0,
-                        pitch: 1,
-                        rate: 1,
-                        onSpeechEnd: () => {
+              <Button
+                className='button'
+                onClick={onClick}
+                ref={buttonRef}
+                size='huge'
+                color='green'
+              >
+                {
+                  state === 'Passive'
+                    ? 'Click to Speak 🎙️ =>'
+                    : state === 'Listening'
+                      ? '🎤 Say a Phrase (e.g. "Help me")'
+                      : state === 'Sending'
+                        ? <Loader active inline='centered' />
+                        : '🔊' + message
+                }
+              </Button>
 
-                        },
-                        onSpeechError: () => {
-
-                        }
-                      })
-                    }
-                  }}
-                />
-
-                <ButtonDefault
-                  className='button'
-                />
-
-                <Button
-                  className='button'
-                  onClick={onClick}
-                  ref={buttonRef}
-                  size='huge'
-                  color='green'
-                >
-                  {
-                    state === 'Passive'
-                      ? 'Click to Speak 🎙️ =>'
-                      : state === 'Listening'
-                        ? '🎤 Say a Phrase (e.g. "Help me")'
-                        : state === 'Sending'
-                          ? <Loader active inline='centered' />
-                          : '🔊' + message
-                  }
-                </Button>
-
-                <Oscilloscope
-                  canvasWrapperClassName='canvasWrapper'
-                  canvasClassName='canvas'
-                />
-              </div>
-            )
-          }
-        </VuicsConsumer>
-      </VuicsProvider>
+              <Oscilloscope
+                canvasWrapperClassName='canvasWrapper'
+                canvasClassName='canvas'
+              />
+            </div>
+          )
+        }
+      </VuicsConsumer>
+    </VuicsProvider>
   )
 }

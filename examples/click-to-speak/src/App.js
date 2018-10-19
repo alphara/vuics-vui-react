@@ -3,7 +3,7 @@ import React, {
 } from 'react'
 
 import {
-  Vuics,
+  VuicsProvider,
   initVuics,
   ButtonDefault,
   Oscilloscope,
@@ -22,90 +22,90 @@ initVuics({
 
 export default class App extends Component {
   hello = (data, api) => {
-    const {
-      intentName, // string
-      audioStream, // ArrayBuffer
-      contentType, // string
-      dialogState, // string
-      slots // object
-    } = data
-
-    const {
-      isSynthesizerSupported, // func
-      isRecognitionSupported, // func
-
-      speak, // func
-
-      state, // string
-      transcript, // string
-      message, // string
-
-      recognizing, // bool,
-      listening, // bool
-
-      onClick, // func
-
-      start, // func
-      abort, // func
-      pause, // func
-      resume, // func
-      debug, // func
-      setLanguage, // func
-      addSpeechHandlers, // func
-      removeSpeechHandlers, // func
-      addCallback, // func
-      removeCallback, // func
-      isListening, // func
-      trigger // func
-    } = api
+    // const {
+    //   intentName, // string
+    //   audioStream, // ArrayBuffer
+    //   contentType, // string
+    //   dialogState, // string
+    //   slots // object
+    // } = data
+    //
+    // const {
+    //   isSynthesizerSupported, // func
+    //   isRecognitionSupported, // func
+    //
+    //   speak, // func
+    //
+    //   state, // string
+    //   transcript, // string
+    //   message, // string
+    //
+    //   recognizing, // bool,
+    //   listening, // bool
+    //
+    //   onClick, // func
+    //
+    //   start, // func
+    //   abort, // func
+    //   pause, // func
+    //   resume, // func
+    //   debug, // func
+    //   setLanguage, // func
+    //   addSpeechHandlers, // func
+    //   removeSpeechHandlers, // func
+    //   addCallback, // func
+    //   removeCallback, // func
+    //   isListening, // func
+    //   trigger // func
+    // } = api
 
     console.log('data:', data, ', api:', api)
   }
 
   howareyou = (data, api) => {
-    const {
-      intentName, // string
-      audioStream, // ArrayBuffer
-      contentType, // string
-      dialogState, // string
-      slots // object
-    } = data
-
-    const {
-      isSynthesizerSupported, // func
-      isRecognitionSupported, // func
-
-      speak, // func
-
-      state, // string
-      transcript, // string
-      message, // string
-
-      recognizing, // bool,
-      listening, // bool
-
-      onClick, // func
-
-      start, // func
-      abort, // func
-      pause, // func
-      resume, // func
-      debug, // func
-      setLanguage, // func
-      addSpeechHandlers, // func
-      removeSpeechHandlers, // func
-      addCallback, // func
-      removeCallback, // func
-      isListening, // func
-      trigger // func
-    } = api
+    // const {
+    //   intentName, // string
+    //   audioStream, // ArrayBuffer
+    //   contentType, // string
+    //   dialogState, // string
+    //   slots // object
+    // } = data
+    //
+    // const {
+    //   isSynthesizerSupported, // func
+    //   isRecognitionSupported, // func
+    //
+    //   speak, // func
+    //
+    //   state, // string
+    //   transcript, // string
+    //   message, // string
+    //
+    //   recognizing, // bool,
+    //   listening, // bool
+    //
+    //   onClick, // func
+    //
+    //   start, // func
+    //   abort, // func
+    //   pause, // func
+    //   resume, // func
+    //   debug, // func
+    //   setLanguage, // func
+    //   addSpeechHandlers, // func
+    //   removeSpeechHandlers, // func
+    //   addCallback, // func
+    //   removeCallback, // func
+    //   isListening, // func
+    //   trigger // func
+    // } = api
 
     console.log('data:', data, ', api:', api)
   }
 
   intentHandlers = {
     'Hello': this.hello,
-    'HowAreYou': this.howareyou,
+    'HowAreYou': this.howareyou
   }
 
   recognitionCallbacks = {
@@ -162,49 +162,46 @@ export default class App extends Component {
   }
 
   render = () => (
-    <div>
-      <Vuics
-        vuicsVuiId='VuicsHome'
-        fillStyle='rgb(27,28,29)'
-        lineWidth={2}
-        strokeStyle='rgb(33,186,70)'
-        intentHandlers={this.intentHandlers}
-        recognitionCallbacks={this.recognitionCallbacks}
-      >
-        <ButtonDefault
-          className='button'
-        />
+    <VuicsProvider
+      vuicsVuiId='VuicsHome'
+      fillStyle='rgb(27,28,29)'
+      lineWidth={2}
+      strokeStyle='rgb(33,186,70)'
+      intentHandlers={this.intentHandlers}
+      recognitionCallbacks={this.recognitionCallbacks}
+    >
+      <ButtonDefault
+        className='button'
+      />
 
-        <VuicsConsumer>
-          {
-            ({ buttonRef, onClick, state, message }) => (
-              <Button
-                className='button'
-                onClick={onClick}
-                ref={buttonRef}
-                size='huge'
-                color='green'
-              >
-                {
-                  state === 'Passive'
-                    ? 'Click to Speak 🎙️ =>'
-                    : state === 'Listening'
-                      ? '🎤 Say a Phrase (e.g. "Help me")'
-                      : state === 'Sending'
-                        ? <Loader active inline='centered' />
-                        : '🔊' + message
-                }
-              </Button>
-            )
-          }
-        </VuicsConsumer>
+      <VuicsConsumer>
+        {
+          ({ buttonRef, onClick, state, message }) => (
+            <Button
+              className='button'
+              onClick={onClick}
+              ref={buttonRef}
+              size='huge'
+              color='green'
+            >
+              {
+                state === 'Passive'
+                  ? 'Click to Speak 🎙️ =>'
+                  : state === 'Listening'
+                    ? '🎤 Say a Phrase (e.g. "Help me")'
+                    : state === 'Sending'
+                      ? <Loader active inline='centered' />
+                      : '🔊' + message
+              }
+            </Button>
+          )
+        }
+      </VuicsConsumer>
 
-        <Oscilloscope
-          canvasWrapperClassName='canvasWrapper'
-          canvasClassName='canvas'
-        />
-      </Vuics>
-
-    </div>
+      <Oscilloscope
+        canvasWrapperClassName='canvasWrapper'
+        canvasClassName='canvas'
+      />
+    </VuicsProvider>
   )
 }

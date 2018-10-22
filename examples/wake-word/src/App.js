@@ -271,7 +271,7 @@ export default class App extends Component {
 
   render = () => (
     <VuicsProvider
-      vuicsVuiId='VuicsHome'
+      name='VuicsHome'
 
       fillStyle='rgb(27,28,29)'
       lineWidth={2}

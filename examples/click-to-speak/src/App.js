@@ -163,10 +163,11 @@ export default class App extends Component {
 
   render = () => (
     <VuicsProvider
-      vuicsVuiId='VuicsHome'
+      name='VuicsHome'
       fillStyle='rgb(27,28,29)'
       lineWidth={2}
       strokeStyle='rgb(33,186,70)'
+      locale='en_US'
       intentHandlers={this.intentHandlers}
       recognitionCallbacks={this.recognitionCallbacks}
     >

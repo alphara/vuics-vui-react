@@ -125,7 +125,7 @@ export default class Vuics extends Component {
 
     children: PropTypes.node.isRequired,
 
-    vuicsVuiId: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
 
     intentHandlers: PropTypes.object.isRequired,
     speechHandlers: PropTypes.object,
@@ -965,9 +965,7 @@ export default class Vuics extends Component {
 
     this.conversation = new Conversation(
       {
-        vuiConfig: {
-          botName: this.props.vuicsVuiId
-        }
+        vuiConfig: { name: this.props.name }
       },
       this.onChangeState,
       this.onData,

@@ -1,7 +1,7 @@
 {
   "name": "vuics-vui-react-click-to-speak-example",
   "homepage": "https://alphara.github.io/vuics-vui-react",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "ISC",
   "private": true,
   "dependencies": {

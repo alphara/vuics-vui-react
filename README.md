@@ -123,7 +123,7 @@ export default class App extends Component {
   render = () => (
     <div>
       <Vuics
-        vuicsVuiId='VuicsHome'
+        name='VuicsHome'
         onConversationData={this.onData}
         fillStyle='rgb(27,28,29)'
         lineWidth={2}

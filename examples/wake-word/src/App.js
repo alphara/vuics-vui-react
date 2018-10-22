@@ -24,14 +24,16 @@ initVuics({
 })
 
 export default class App extends Component {
-  onData = data => {
-    console.log('intentName:', data.intentName)
-    Recognizer.resume();
-  }
-
   state = {
     recognizing: false,
   };
+
+  onData = data => {
+    console.log('intentName:', data.intentName)
+    if (this.state.recognizing) {
+      Recognizer.resume();
+    }
+  }
 
   savedOnClick = () => {};
 
@@ -64,7 +66,6 @@ export default class App extends Component {
         'callback': onSleepWord,
       },
     });
-    Recognizer.start();
   }
 
   render = () => {

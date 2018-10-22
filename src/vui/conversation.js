@@ -2,7 +2,6 @@ import AudioControl from './control';
 import settings from './settings'
 import axios from 'axios';
 
-const DEFAULT_LATEST = '$LATEST';
 const DEFAULT_CONTENT_TYPE = 'audio/x-l16; sample-rate=16000';
 const DEFAULT_USER_ID = 'userId';
 const DEFAULT_ACCEPT_HEADER_VALUE = 'audio/mpeg';
@@ -38,7 +37,7 @@ function Conversation (config, onStateChange, onSuccess, onError, onAudioData) {
   this.onError = onError || function () { /* no op */ };
   this.onAudioData = onAudioData || function () { /* no op */ };
 
-  if (!this.config.vuiConfig.botName) {
+  if (!this.config.vuiConfig.name) {
     this.onError('A Bot name must be provided.');
     return;
   }
@@ -145,44 +144,14 @@ function Sending (state) {
 
     let data = new FormData();
     data.append('inputStream', state.vuiConfig.inputStream);
-    data.append('botAlias', state.vuiConfig.botAlias);
-    data.append('botName', state.vuiConfig.botName);
+    data.append('name', state.vuiConfig.name);
     data.append('contentType', state.vuiConfig.contentType);
     data.append('userId', state.vuiConfig.userId);
     data.append('accept', state.vuiConfig.accept);
 
-    // fetch(`${settings.apiUrl}/vui`, {
-    //   method: 'POST', // *GET, POST, PUT, DELETE, etc.
-    //   mode: 'cors', // no-cors, cors, *same-origin
-    //   cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-    //   credentials: 'include', // include, same-origin, *omit
-    //   headers: {
-    //     'X-API-key': settings.apiKey
-    //     // 'Content-Type': 'application/json; charset=utf-8'
-    //     // "Content-Type": "application/x-www-form-urlencoded",
-    //   },
-    //   // redirect: 'follow', // manual, *follow, error
-    //   // referrer: 'no-referrer', // no-referrer, *client
-    //   body: data // body data type must match "Content-Type" header
-    // })
-    //   .then(response => response.json())
-    //   .then((response) => {
-    //     console.log('fetch response: ', response)
-    //     response.audioStream = bufferToArrayBuffer(response.audioStream);
-    //     state.audioOutput = response;
-    //
-    //     state.transition(new Speaking(state));
-    //     state.onSuccess(response);
-    //   })
-    //   .catch(err => {
-    //     console.log('Sending error: ', err)
-    //     state.onError(err);
-    //     state.transition(new Initial(state));
-    //   })
-
     axios({
       method: 'post',
-      url: `${settings.apiUrl}/vui`,
+      url: `${settings.apiUrl}/vui-server/content`,
       data,
       headers: {
         'X-API-key': settings.apiKey
@@ -230,12 +199,8 @@ function applyDefaults (config) {
 
   const vuiConfig = config.vuiConfig || {};
 
-  vuiConfig.botAlias = vuiConfig.hasOwnProperty('botAlias')
-    ? vuiConfig.botAlias
-    : DEFAULT_LATEST;
-
-  vuiConfig.botName = vuiConfig.hasOwnProperty('botName')
-    ? vuiConfig.botName
+  vuiConfig.name = vuiConfig.hasOwnProperty('name')
+    ? vuiConfig.name
     : '';
 
   vuiConfig.contentType = vuiConfig.hasOwnProperty('contentType')

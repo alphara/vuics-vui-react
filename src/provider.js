@@ -29,7 +29,7 @@ export default class Vuics extends Component {
   static propTypes = {
     children: PropTypes.node.isRequired,
 
-    vuicsVuiId: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
     onConversationData: PropTypes.func.isRequired,
 
     fillStyle: PropTypes.string,
@@ -239,7 +239,7 @@ export default class Vuics extends Component {
     this.conversation = new Conversation(
       {
         vuiConfig: {
-          botName: this.props.vuicsVuiId
+          name: this.props.name
         }
       },
       this.onChangeState,

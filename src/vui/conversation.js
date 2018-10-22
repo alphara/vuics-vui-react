@@ -38,7 +38,7 @@ function Conversation (config, onStateChange, onSuccess, onError, onAudioData) {
   this.onAudioData = onAudioData || function () { /* no op */ };
 
   if (!this.config.vuiConfig.name) {
-    this.onError('A Bot name must be provided.');
+    this.onError('A VUI name must be provided.');
     return;
   }
 

@@ -27,7 +27,6 @@ export default class App extends Component {
   onData = data => {
     console.log('intentName:', data.intentName)
     Recognizer.resume();
-    this.setState({ recognizing: true });
   }
 
   state = {
@@ -44,7 +43,6 @@ export default class App extends Component {
       Synthesizer.speak({ phrase: 'Listening' });
       setTimeout(this.wakeUp, 1000);
       Recognizer.abort(); // alternative way: Recognizer.pause();
-      this.setState({ recognizing: false });
     }
 
     const onSleepWord = (farewell, vuiname) => {
@@ -67,7 +65,6 @@ export default class App extends Component {
       },
     });
     Recognizer.start();
-    this.setState({ recognizing: true });
   }
 
   render = () => {

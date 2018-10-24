@@ -46,7 +46,6 @@ class Conversation {
     onError = () => {},
     onAudioData = () => {}
   }) {
-    console.log('new Conversation')
     this.audioControl = AudioControl
 
     this.message = MESSAGES.PASSIVE
@@ -78,8 +77,6 @@ class Conversation {
   }
 
   onSilence () {
-    console.log('onSilence this.config.silenceDetection: ', this.config.silenceDetection)
-
     if (this.config.silenceDetection) {
       this.audioControl.stopRecording()
 
@@ -119,11 +116,7 @@ class Conversation {
   }
 
   advanceConversation () {
-    console.log('advanceConversation this.message: ', this.message)
-
     this.audioControl.supportsAudio(supported => {
-      console.log('supportsAudio: ', supported)
-
       if (supported) {
         switch (this.message) {
           case MESSAGES.PASSIVE:
@@ -158,29 +151,28 @@ class Conversation {
   }
 
   initialConversation () {
-    console.log('initialConversation: ', MESSAGES.LISTENING)
-
-    this.transition(MESSAGES.LISTENING)
-
     this.audioControl.startRecording({
       onSilence: this.onSilence,
       visualizer: this.onAudioData,
       config: this.config
-    });
+    })
+
+    console.log('initialConversation: ', MESSAGES.LISTENING)
+
+    this.transition(MESSAGES.LISTENING)
   }
 
   listeningConversation () {
-    console.log('listeningConversation: ', MESSAGES.SENDING)
-
-    this.transition(MESSAGES.SENDING)
-
     this.audioControl.exportWAV((blob) => {
       this.audioInput = blob
+
+      console.log('listeningConversation: ', MESSAGES.SENDING)
+
+      this.transition(MESSAGES.SENDING)
     })
   }
 
   sendingConversation () {
-    console.log('sendingConversation')
     this.config.inputStream = this.audioInput
 
     let data = new FormData()
@@ -208,23 +200,21 @@ class Conversation {
 
       this.audioOutput = data
 
+      this.onSuccess(data)
+
       console.log('sendingConversation success: ', MESSAGES.SPEAKING)
 
       this.transition(MESSAGES.SPEAKING)
-
-      this.onSuccess(data)
     }).catch((err) => {
+      this.onError(err)
+
       console.log('sendingConversation error: ', MESSAGES.PASSIVE)
 
       this.transition(MESSAGES.PASSIVE)
-
-      this.onError(err)
     })
   }
 
   speakingConversation () {
-    console.log('speakingConversation')
-
     if (this.audioOutput.contentType === 'audio/mpeg') {
       this.audioControl.play(this.audioOutput.audioStream, () => {
         if (
@@ -237,15 +227,15 @@ class Conversation {
 
           this.transition(MESSAGES.PASSIVE);
         } else {
-          console.log('speakingConversation: ', MESSAGES.LISTENING)
-
-          this.transition(MESSAGES.LISTENING)
-
           this.audioControl.startRecording(
             this.onSilence,
             this.onAudioData,
             this.config.silenceDetection
           )
+
+          console.log('speakingConversation: ', MESSAGES.LISTENING)
+
+          this.transition(MESSAGES.LISTENING)
         }
       })
     } else {

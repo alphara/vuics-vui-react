@@ -1,4 +1,7 @@
-import settings from './vui/settings'
+import {
+  setApiKey,
+  setApiUrl
+} from './vui/settings'
 
 export {
   default as VuicsProvider,
@@ -21,9 +24,9 @@ export {
 export const initVuics = ({ apiKey, apiUrl }) => {
   console.log('init')
   if (apiKey) {
-    settings.apiKey = apiKey
+    setApiKey(apiKey)
   }
   if (apiUrl) {
-    settings.apiUrl = apiUrl
+    setApiUrl(apiUrl)
   }
 }

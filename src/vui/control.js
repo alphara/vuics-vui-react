@@ -4,7 +4,6 @@ const UNSUPPORTED = 'Audio is not supported.'
 
 class AudioControl {
   constructor () {
-    console.log('New AudioControl')
     this.recorder = null
     this.audioRecorder = null
     this.audioSupported = false
@@ -18,8 +17,6 @@ class AudioControl {
     visualizer = () => {},
     config
   }) {
-    console.log('startRecording config: ', config, ' onSilence: ', onSilence)
-
     if (!this.audioSupported) {
       throw new Error(UNSUPPORTED)
     }
@@ -84,15 +81,15 @@ class AudioControl {
 
     const fileReader = new FileReader()
 
-    fileReader.onload = () => {
-      this.playbackSource = this.audioRecorder.getAudioContext().createBufferSource()
+    fileReader.onload = ({ target: { result } }) => {
+      const context = this.audioRecorder.getAudioContext()
 
-      this.audioRecorder.getAudioContext().decodeAudioData(this.result, buf => {
+      this.playbackSource = context.createBufferSource()
+
+      context.decodeAudioData(result, buf => {
         this.playbackSource.buffer = buf
 
-        this.playbackSource.connect(
-          this.audioRecorder.getAudioContext().destination
-        )
+        this.playbackSource.connect(context.destination)
 
         this.playbackSource.onended = (event) => {
           if (typeof callback === 'function') {
@@ -120,8 +117,6 @@ class AudioControl {
   }
 
   supportsAudio (callback = () => {}) {
-    console.log('supportsAudio')
-
     if (this.audioSupported) {
       callback(true) // eslint-disable-line standard/no-callback-literal
       return true

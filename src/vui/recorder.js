@@ -2,7 +2,6 @@ import work from 'webworkify-webpack';
 
 class Recorder {
   constructor (source, { time = 1500, amplitude = 0.2 } = {}) {
-    console.log('new Recorder')
     this.recording = false
 
     this.start = 0
@@ -69,7 +68,6 @@ class Recorder {
   }
 
   record ({ onSilence, visualizer }) {
-    console.log('record')
     this.onSilence = onSilence
 
     this.visualizationCallback = visualizer
@@ -155,7 +153,6 @@ class Recorder {
 
 class AudioRecorder {
   constructor () {
-    console.log('new AudioRecorder')
     this.audioContext = null
     this.audioStream = null
     this.recorder = null

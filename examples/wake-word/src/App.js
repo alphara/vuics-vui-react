@@ -42,7 +42,7 @@ export default class App extends Component {
     // pause, // func
     // resume, // func
     // debug, // func
-    // setLanguage, // func
+    // changeLocale, // func
     // isListening, // func
     // trigger // func
   }) => {
@@ -70,7 +70,7 @@ export default class App extends Component {
     abort(); // alternative way: Recognizer.pause();
   }
 
-  onGoodbay = ([
+  onGoodbay = ([[
     farewell,
     vuiname
   ], {
@@ -91,10 +91,10 @@ export default class App extends Component {
     // pause, // func
     // resume, // func
     // debug, // func
-    // setLanguage, // func
+    // changeLocale, // func
     // isListening, // func
     // trigger // func
-  }) => {
+  }]) => {
     console.log('farewell:', farewell, ', vuiname:', vuiname);
 
     speak({
@@ -142,9 +142,9 @@ export default class App extends Component {
       // pause, // func
       resume // func
       // debug, // func
-      // setLanguage, // func
-      // addSpeechHandlers, // func
-      // removeSpeechHandlers, // func
+      // changeLocale, // func
+      // addRecognizerHandlers, // func
+      // removeRecognizerHandlers, // func
       // addCallback, // func
       // removeCallback, // func
       // isListening, // func
@@ -185,9 +185,9 @@ export default class App extends Component {
       // pause, // func
       resume // func
       // debug, // func
-      // setLanguage, // func
-      // addSpeechHandlers, // func
-      // removeSpeechHandlers, // func
+      // changeLocale, // func
+      // addRecognizerHandlers, // func
+      // removeRecognizerHandlers, // func
       // addCallback, // func
       // removeCallback, // func
       // isListening, // func
@@ -203,7 +203,7 @@ export default class App extends Component {
     'HowAreYou': this.howareyou
   }
 
-  speechHandlers = {
+  recognizerHandlers = {
     ':greeting :vuiname': {
       'regexp': /^(Hello|Hey|Hi) (Vuics|Voice|Voice Interface|Voice User Interface)$/,
       'callback': this.onGreetings
@@ -217,56 +217,66 @@ export default class App extends Component {
   }
 
   recognitionCallbacks = {
-    start: [
-      (api) => {
+    start: [{
+      callback: (api) => {
         // console.log('recognitionCallbacks start api: ', api)
-      }
-    ],
-    end: [
-      (api) => {
+      },
+      context: this
+    }],
+    end: [{
+      callback: (api) => {
 
-      }
-    ],
-    soundstart: [
-      (api) => {
+      },
+      context: this
+    }],
+    soundstart: [{
+      callback: (api) => {
 
-      }
-    ],
-    result: [
-      (results, api) => {
+      },
+      context: this
+    }],
+    result: [{
+      callback: (results, api) => {
 
-      }
-    ],
-    resultMatch: [
-      ({ commandText, originalPhrase, results }, api) => {
+      },
+      context: this
+    }],
+    resultMatch: [{
+      callback: ({ commandText, originalPhrase, results }, api) => {
 
-      }
-    ],
-    resultNoMatch: [
-      (results, api) => {
+      },
+      context: this
+    }],
+    resultNoMatch: [{
+      callback: (results, api) => {
 
-      }
-    ],
-    error: [
-      (event, api) => {
+      },
+      context: this
+    }],
+    error: [{
+      callback: (event, api) => {
         // console.log('error event', event)
-      }
-    ],
-    errorNetwork: [
-      (event, api) => {
+      },
+      context: this
+    }],
+    errorNetwork: [{
+      callback: (event, api) => {
         // console.log('errorNetwork event', event)
-      }
-    ],
-    errorPermissionBlocked: [
-      (event, api) => {
+      },
+      context: this
+    }],
+    errorPermissionBlocked: [{
+      callback: (event, api) => {
         // console.log('errorPermissionBlocked event', event)
-      }
-    ],
-    errorPermissionDenied: [
-      (event, api) => {
+      },
+      context: this
+    }],
+    errorPermissionDenied: [{
+      callback: (event, api) => {
         // console.log('errorPermissionDenied event', event)
-      }
-    ]
+      },
+      context: this
+    }]
   }
 
   render = () => (
@@ -277,7 +287,7 @@ export default class App extends Component {
       lineWidth={2}
       strokeStyle='rgb(33,186,70)'
       locale='en_US'
-      speechHandlers={this.speechHandlers}
+      recognizerHandlers={this.recognizerHandlers}
       intentHandlers={this.intentHandlers}
       recognitionCallbacks={this.recognitionCallbacks}
     >
@@ -304,9 +314,9 @@ export default class App extends Component {
             pause, // func
             resume, // func
             debug, // func
-            setLanguage, // func
-            addSpeechHandlers, // func
-            removeSpeechHandlers, // func
+            changeLocale, // func
+            addRecognizerHandlers, // func
+            removeRecognizerHandlers, // func
             addCallback, // func
             removeCallback, // func
             isListening, // func

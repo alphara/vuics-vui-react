@@ -41,11 +41,14 @@ const bufferToArrayBuffer = ({ data }) => {
 class Conversation {
   constructor ({
     config,
+    synthesizer,
     onStateChange = () => {},
     onSuccess = () => {},
     onError = () => {},
     onAudioData = () => {}
   }) {
+    this.synthesizer = synthesizer
+
     this.audioControl = AudioControl
 
     this.message = MESSAGES.PASSIVE
@@ -63,6 +66,7 @@ class Conversation {
       return
     }
 
+    this.onAudioStream = this.onAudioStream.bind(this)
     this.onSilence = this.onSilence.bind(this)
     this.stopRecord = this.stopRecord.bind(this)
     this.transition = this.transition.bind(this)
@@ -172,6 +176,28 @@ class Conversation {
     })
   }
 
+  onAudioStream ({ data }) {
+    console.log('data: ', data)
+
+    if (data.audioStream) {
+      data.audioStream = bufferToArrayBuffer(data.audioStream)
+
+      this.audioOutput = data
+
+      this.onSuccess(data)
+
+      console.log('sendingConversation success: ', MESSAGES.SPEAKING)
+
+      this.transition(MESSAGES.SPEAKING)
+    } else {
+      this.onError(data)
+
+      console.log('sendingConversation error: ', MESSAGES.PASSIVE)
+
+      this.transition(MESSAGES.PASSIVE)
+    }
+  }
+
   sendingConversation () {
     this.config.inputStream = this.audioInput
 
@@ -195,17 +221,7 @@ class Conversation {
       headers: {
         'X-API-key': settings.apiKey
       }
-    }).then(({ data }) => {
-      data.audioStream = bufferToArrayBuffer(data.audioStream)
-
-      this.audioOutput = data
-
-      this.onSuccess(data)
-
-      console.log('sendingConversation success: ', MESSAGES.SPEAKING)
-
-      this.transition(MESSAGES.SPEAKING)
-    }).catch((err) => {
+    }).then(this.onAudioStream).catch(err => {
       this.onError(err)
 
       console.log('sendingConversation error: ', MESSAGES.PASSIVE)
@@ -215,7 +231,7 @@ class Conversation {
   }
 
   speakingConversation () {
-    if (this.audioOutput.contentType === 'audio/mpeg') {
+    if (this.audioOutput.audioStream) {
       this.audioControl.play(this.audioOutput.audioStream, () => {
         if (
           this.audioOutput.dialogState === 'ReadyForFulfillment' ||
@@ -238,6 +254,18 @@ class Conversation {
           this.transition(MESSAGES.LISTENING)
         }
       })
+    } else if (this.audioOutput && this.audioOutput.message) {
+      if (this.synthesizer.isSynthesizerSupported()) {
+        this.synthesizer.speak({
+          phrase: this.audioOutput.message,
+          onSpeechEnd: (e) => {
+            console.log('onSpeechEnd e: ', e)
+          },
+          onSpeechError: (e) => {
+            console.log('onSpeechError: ', e)
+          }
+        })
+      }
     } else {
       console.error('speakingConversation Error: AudioOutput ContentType is ', this.audioOutput.contentType, ', but should be strictly audio/mpeg !')
 

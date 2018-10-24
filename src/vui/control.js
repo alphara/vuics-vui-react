@@ -1,156 +1,161 @@
-import AudioRecorder from './recorder.js';
+import AudioRecorder from './recorder.js'
 
-let recorder;
-let audioRecorder;
-let audioSupported;
-let playbackSource;
+const UNSUPPORTED = 'Audio is not supported.'
 
-const UNSUPPORTED = 'Audio is not supported.';
+class AudioControl {
+  constructor () {
+    console.log('New AudioControl')
+    this.recorder = null
+    this.audioRecorder = null
+    this.audioSupported = false
+    this.playbackSource = null
 
-function AudioControl (options = {}) {
-  this.checkAudioSupport = options.checkAudioSupport !== false;
-  console.log('checkAudioSupport:', this.checkAudioSupport)
+    this.supportsAudio()
+  }
 
-  function startRecording (
+  startRecording ({
     onSilence = () => {},
     visualizer = () => {},
-    silenceDetectionConfig
-  ) {
-    audioSupported = audioSupported !== false;
-    if (!audioSupported) {
-      throw new Error(UNSUPPORTED);
+    config
+  }) {
+    console.log('startRecording config: ', config, ' onSilence: ', onSilence)
+
+    if (!this.audioSupported) {
+      throw new Error(UNSUPPORTED)
     }
 
-    recorder = audioRecorder.createRecorder(silenceDetectionConfig);
+    this.recorder = this.audioRecorder.createRecorder(config)
 
-    recorder.record(onSilence, visualizer);
+    this.recorder.record({
+      onSilence,
+      visualizer
+    })
   }
 
-  function stopRecording () {
-    audioSupported = audioSupported !== false;
-
-    if (!audioSupported) {
-      throw new Error(UNSUPPORTED);
+  stopRecording () {
+    if (!this.audioSupported) {
+      throw new Error(UNSUPPORTED)
     }
 
-    recorder.stop();
+    this.recorder.stop()
   }
 
-  function exportWAV (
+  exportWAV (
     callback = () => {
       throw new Error('You must pass a callback function to export.')
     },
     sampleRate = 16000
   ) {
-    audioSupported = audioSupported !== false;
-
-    if (!audioSupported) {
-      throw new Error(UNSUPPORTED);
+    if (!this.audioSupported) {
+      throw new Error(UNSUPPORTED)
     }
 
-    recorder.exportWAV(callback, sampleRate);
+    this.recorder.exportWAV(callback, sampleRate)
 
-    recorder.clear();
+    this.recorder.clear()
   }
 
-  function playHtmlAudioElement (buffer, callback) {
+  playHtmlAudioElement (buffer, callback) {
     if (typeof buffer === 'undefined') {
-      return;
+      return
     }
 
-    const audio = document.createElement('audio');
+    const audio = document.createElement('audio')
 
-    audio.src = window.URL.createObjectURL(new Blob([buffer]));
+    audio.src = window.URL.createObjectURL(new Blob([buffer]))
 
     audio.addEventListener('ended', () => {
-      audio.currentTime = 0;
+      audio.currentTime = 0
+
       if (typeof callback === 'function') {
-        callback();
+        callback()
       }
-    });
+    })
 
-    audio.play();
+    audio.play()
   }
 
-  function play (buffer, callback) {
+  play (buffer, callback) {
     if (typeof buffer === 'undefined') {
-      return;
+      return
     }
 
-    const myBlob = new Blob([buffer]);
+    const myBlob = new Blob([buffer])
 
-    const fileReader = new FileReader();
+    const fileReader = new FileReader()
 
-    fileReader.onload = function onload () {
-      playbackSource = audioRecorder.audioContext().createBufferSource();
+    fileReader.onload = () => {
+      this.playbackSource = this.audioRecorder.getAudioContext().createBufferSource()
 
-      audioRecorder.audioContext().decodeAudioData(this.result, buf => {
-        playbackSource.buffer = buf;
+      this.audioRecorder.getAudioContext().decodeAudioData(this.result, buf => {
+        this.playbackSource.buffer = buf
 
-        playbackSource.connect(audioRecorder.audioContext().destination);
+        this.playbackSource.connect(
+          this.audioRecorder.getAudioContext().destination
+        )
 
-        playbackSource.onended = (event) => {
+        this.playbackSource.onended = (event) => {
           if (typeof callback === 'function') {
-            callback();
+            callback()
           }
-        };
+        }
 
-        playbackSource.start(0);
-      });
-    };
-
-    fileReader.readAsArrayBuffer(myBlob);
-  }
-
-  function stop () {
-    if (typeof playbackSource === 'undefined') {
-      return;
+        this.playbackSource.start(0)
+      })
     }
 
-    playbackSource.stop();
+    fileReader.readAsArrayBuffer(myBlob)
   }
 
-  function clear () {
-    recorder.clear();
+  stop () {
+    if (typeof playbackSource === 'undefined') {
+      return
+    }
+
+    this.playbackSource.stop()
   }
 
-  function supportsAudio (callback = () => {}) {
+  clear () {
+    this.recorder.clear()
+  }
+
+  supportsAudio (callback = () => {}) {
+    console.log('supportsAudio')
+
+    if (this.audioSupported) {
+      callback(true) // eslint-disable-line standard/no-callback-literal
+      return true
+    }
+
     if (
       navigator.mediaDevices &&
       navigator.mediaDevices.getUserMedia
     ) {
-      audioRecorder = AudioRecorder();
+      this.audioSupported = true
 
-      audioRecorder.requestDevice()
+      this.audioRecorder = AudioRecorder
+
+      this.audioRecorder.requestDevice()
         .then(stream => {
-          audioSupported = true;
-          callback(audioSupported);
+          this.audioSupported = true
+
+          callback(this.audioSupported)
         })
         .catch(error => {
           console.log('audioRecorder requestDevice error', error)
-          audioSupported = false;
-          callback(audioSupported);
-        });
+
+          this.audioSupported = false
+
+          callback(this.audioSupported)
+        })
     } else {
-      audioSupported = false;
-      callback(audioSupported);
+      this.audioSupported = false
+
+      callback(this.audioSupported)
     }
   }
-
-  if (this.checkAudioSupport) {
-    supportsAudio();
-  }
-
-  return ({
-    startRecording,
-    stopRecording,
-    exportWAV,
-    play,
-    stop,
-    clear,
-    playHtmlAudioElement,
-    supportsAudio
-  });
 }
 
-export default AudioControl;
+const Instance = new AudioControl()
+
+export default Instance

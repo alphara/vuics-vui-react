@@ -64,6 +64,42 @@ export default class Vuics extends Component {
       message: 'Click to Speak!'
     }
 
+    this.getApi = this.getApi.bind(this)
+
+    this._onRecognitionStart = this._onRecognitionStart.bind(this)
+    this._onRecognitionSoundStart = this._onRecognitionSoundStart.bind(this)
+    this._onRecognitionError = this._onRecognitionError.bind(this)
+    this._onRecognitionEnd = this._onRecognitionEnd.bind(this)
+    this._onRecognitionResult = this._onRecognitionResult.bind(this)
+    this._onVoicesChanged = this._onVoicesChanged.bind(this)
+    this._onSpeechEnd = this._onSpeechEnd.bind(this)
+    this._onSpeechError = this._onSpeechError.bind(this)
+    this.speak = this.speak.bind(this)
+    this.start = this.start.bind(this)
+    this.abort = this.abort.bind(this)
+    this.pause = this.pause.bind(this)
+    this.resume = this.resume.bind(this)
+    this.debug = this.debug.bind(this)
+    this.setLanguage = this.setLanguage.bind(this)
+    this.addSpeechHandlers = this.addSpeechHandlers.bind(this)
+    this.removeSpeechHandlers = this.removeSpeechHandlers.bind(this)
+    this.addCallback = this.addCallback.bind(this)
+    this.removeCallback = this.removeCallback.bind(this)
+    this.isListening = this.isListening.bind(this)
+    this.trigger = this.trigger.bind(this)
+    this.isRecognitionSupported = this.isRecognitionSupported.bind(this)
+    this._commandToRegExp = this._commandToRegExp.bind(this)
+    this._invokeRecognitionCallbacks = this._invokeRecognitionCallbacks.bind(this)
+    this._logMessage = this._logMessage.bind(this)
+    this._registerCommand = this._registerCommand.bind(this)
+    this._parseResults = this._parseResults.bind(this)
+    this.setCanvasDimensions = this.setCanvasDimensions.bind(this)
+    this.onAudioData = this.onAudioData.bind(this)
+    this.onStateChange = this.onStateChange.bind(this)
+    this.onData = this.onData.bind(this)
+    this.onError = this.onError.bind(this)
+    this.onClick = this.onClick.bind(this)
+
     if (synth) {
       this.voices = synth.getVoices()
 
@@ -155,7 +191,7 @@ export default class Vuics extends Component {
     speechHandlers: {}
   }
 
-  componentDidMount = () => {
+  componentDidMount () {
     this.addSpeechHandlers(this.props.speechHandlers)
 
     window.addEventListener('resize', this.setCanvasDimensions)
@@ -165,35 +201,37 @@ export default class Vuics extends Component {
     this.canvasCtx = this.canvasRef.current.getContext('2d')
   }
 
-  componentWillUnmount = () => {
+  componentWillUnmount () {
     window.removeEventListener('resize', this.setCanvasDimensions)
   }
 
-  getApi = () => ({
-    isSynthesizerSupported: () => !!synth,
-    isRecognitionSupported: this.isRecognitionSupported,
+  getApi () {
+    return {
+      isSynthesizerSupported: () => !!synth,
+      isRecognitionSupported: this.isRecognitionSupported,
 
-    speak: this.speak,
+      speak: this.speak,
 
-    state: this.state.state,
-    transcript: this.state.transcript,
-    message: this.state.message,
-    recognizing: this.state.recognizing,
-    listening: this.state.listening,
+      state: this.state.state,
+      transcript: this.state.transcript,
+      message: this.state.message,
+      recognizing: this.state.recognizing,
+      listening: this.state.listening,
 
-    onClick: this.onClick,
+      onClick: this.onClick,
 
-    start: this.start,
-    abort: this.abort,
-    pause: this.pause,
-    resume: this.resume,
-    debug: this.debug,
-    setLanguage: this.setLanguage,
-    isListening: this.isListening,
-    trigger: this.trigger
-  })
+      start: this.start,
+      abort: this.abort,
+      pause: this.pause,
+      resume: this.resume,
+      debug: this.debug,
+      setLanguage: this.setLanguage,
+      isListening: this.isListening,
+      trigger: this.trigger
+    }
+  }
 
-  _onRecognitionStart = () => {
+  _onRecognitionStart () {
     console.log('recognition onstart')
 
     this.setState(
@@ -209,14 +247,14 @@ export default class Vuics extends Component {
     )
   }
 
-  _onRecognitionSoundStart = () => {
+  _onRecognitionSoundStart () {
     this._invokeRecognitionCallbacks(
       this.state.recognitionCallbacks.soundstart,
       this.getApi()
     )
   }
 
-  _onRecognitionError = event => {
+  _onRecognitionError (event) {
     console.log('recognition onerror')
 
     this._invokeRecognitionCallbacks(
@@ -259,7 +297,7 @@ export default class Vuics extends Component {
     }
   }
 
-  _onRecognitionEnd = () => {
+  _onRecognitionEnd () {
     console.log('recognition onend')
 
     this.setState(
@@ -303,7 +341,7 @@ export default class Vuics extends Component {
     }
   }
 
-  _onRecognitionResult = event => {
+  _onRecognitionResult (event) {
     console.log('recognition onresult')
 
     if (this.state.pauseListening) {
@@ -325,40 +363,39 @@ export default class Vuics extends Component {
     this._parseResults(results)
   }
 
-  _onVoicesChanged = () => {
+  _onVoicesChanged () {
     this.voices = synth.getVoices();
   }
 
-  _onSpeechEnd = (cb) => () => {
-    cb()
+  _onSpeechEnd (cb) {
+    return () => {
+      cb()
 
-    this.setState(
-      () => ({
-        state: 'Passive',
-        listening: false
-      })
-    )
+      this.setState(
+        () => ({
+          state: 'Passive',
+          listening: false
+        })
+      )
+    }
   }
 
-  _onSpeechError = (cb) => () => {
-    cb()
+  _onSpeechError (cb) {
+    return () => {
+      cb()
 
-    this.setState(
-      () => ({
-        state: 'Passive',
-        listening: false
-      })
-    )
+      this.setState(
+        () => ({
+          state: 'Passive',
+          listening: false
+        })
+      )
+    }
   }
 
-  speak = ({
-    phrase,
-    voiceIndex = 0,
-    pitch = 1,
-    rate = 1,
-    onSpeechEnd = () => {},
-    onSpeechError = () => {}
-  }) => {
+  speak ({ phrase, voiceIndex = 0, pitch = 1, rate = 1,
+    onSpeechEnd = () => {}, onSpeechError = () => {}
+  }) {
     if (synth.speaking) {
       console.error('Synthesizer is already speaking.');
       return;
@@ -383,7 +420,7 @@ export default class Vuics extends Component {
     synth.speak(utterThis);
   }
 
-  start = ({ paused, autoRestart, continuous }) => {
+  start ({ paused, autoRestart, continuous }) {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -418,7 +455,7 @@ export default class Vuics extends Component {
     }
   }
 
-  abort = () => {
+  abort () {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -434,7 +471,7 @@ export default class Vuics extends Component {
     this.recognition.abort();
   }
 
-  pause = () => {
+  pause () {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -447,7 +484,7 @@ export default class Vuics extends Component {
     )
   }
 
-  resume = () => {
+  resume () {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -457,7 +494,7 @@ export default class Vuics extends Component {
     });
   }
 
-  debug = (newState = true) => {
+  debug (newState = true) {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -469,7 +506,7 @@ export default class Vuics extends Component {
     )
   }
 
-  setLanguage = (language) => {
+  setLanguage (language) {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -477,7 +514,7 @@ export default class Vuics extends Component {
     this.recognition.lang = language;
   }
 
-  addSpeechHandlers = (speechHandlers) => {
+  addSpeechHandlers (speechHandlers) {
     if (
       !this.isRecognitionSupported() ||
       Object.keys(speechHandlers).length === 0
@@ -513,7 +550,7 @@ export default class Vuics extends Component {
     })
   }
 
-  removeSpeechHandlers = (commandsToRemove) => {
+  removeSpeechHandlers (commandsToRemove) {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -545,7 +582,7 @@ export default class Vuics extends Component {
     }
   }
 
-  addCallback = (type, callback, context) => {
+  addCallback (type, callback, context) {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -573,7 +610,7 @@ export default class Vuics extends Component {
     }
   }
 
-  removeCallback = (type, callback) => {
+  removeCallback (type, callback) {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -603,7 +640,7 @@ export default class Vuics extends Component {
     })
   }
 
-  isListening = () => {
+  isListening () {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -614,7 +651,7 @@ export default class Vuics extends Component {
     );
   }
 
-  trigger = (sentences) => {
+  trigger (sentences) {
     if (!this.isRecognitionSupported()) {
       return
     }
@@ -638,7 +675,7 @@ export default class Vuics extends Component {
     )
   }
 
-  isRecognitionSupported = () => {
+  isRecognitionSupported () {
     if (!SpeechRecognition) {
       this._logMessage('SpeechRecognition does not supported by your browser!')
 
@@ -648,7 +685,7 @@ export default class Vuics extends Component {
     }
   }
 
-  _commandToRegExp = (command) => {
+  _commandToRegExp (command) {
     command = command.replace(escapeRegExp, '\\$&')
       .replace(optionalParam, '(?:$1)?')
       .replace(namedParam, (match, optional) =>
@@ -662,14 +699,14 @@ export default class Vuics extends Component {
     return new RegExp('^' + command + '$', 'i');
   }
 
-  _invokeRecognitionCallbacks = (recognitionCallbacks, ...args) => {
+  _invokeRecognitionCallbacks (recognitionCallbacks, ...args) {
     recognitionCallbacks.length > 0 &&
     recognitionCallbacks.forEach((callbackType) => {
       callbackType(...args)
     })
   }
 
-  _logMessage = (text, extraParameters) => {
+  _logMessage (text, extraParameters) {
     if (text.indexOf('%c') === -1 && !extraParameters) {
       console.log(text);
     } else {
@@ -677,7 +714,7 @@ export default class Vuics extends Component {
     }
   }
 
-  _registerCommand = (command, callback, originalPhrase) => {
+  _registerCommand (command, callback, originalPhrase) {
     this.setState(
       ({ commandsList }) => ({
         commandsList: [
@@ -695,7 +732,7 @@ export default class Vuics extends Component {
     }
   }
 
-  _parseResults = (results) => {
+  _parseResults (results) {
     this._invokeRecognitionCallbacks(
       this.state.recognitionCallbacks.result,
       results,
@@ -751,16 +788,16 @@ export default class Vuics extends Component {
     );
   }
 
-  setCanvasDimensions = () => {
+  setCanvasDimensions () {
     this.setState(
       () => ({
         width: this.canvasWrapperRef.current.clientWidth,
         height: this.canvasWrapperRef.current.clientHeight
       })
     )
-  };
+  }
 
-  visualizeAudioBuffer = (dataArray, bufferLength) => {
+  onAudioData (dataArray, bufferLength) {
     var animationId
 
     this.canvasCtx
@@ -821,9 +858,9 @@ export default class Vuics extends Component {
     if (typeof animationId === 'undefined') {
       animationId = window.requestAnimationFrame(draw)
     }
-  };
+  }
 
-  onChangeState = state => {
+  onStateChange (state) {
     console.log('state:', state)
 
     if (state === 'Listening') {
@@ -895,7 +932,7 @@ export default class Vuics extends Component {
     }
   }
 
-  onData = data => {
+  onData (data) {
     console.log('data:', data)
 
     console.log('Transcript:', data.inputTranscript, ', Response:', data.message)
@@ -946,76 +983,80 @@ export default class Vuics extends Component {
     )
   }
 
-  onError = error => {
+  onError (error) {
     console.log('onError error: ', error)
   }
 
-  onClick = () => {
+  onClick () {
     if (
       this.state.state === 'Listening' ||
       this.state.state === 'Sending' ||
       this.state.state === 'Speaking'
     ) {
-      console.log('this.state.state: ', this.state.state)
-      this.conversation &&
-      typeof this.conversation.stopRecord === 'function' &&
-      this.conversation.stopRecord()
+      console.log('onClick this.state.state: ', this.state.state)
+
+      if (this.conversation) {
+        this.conversation.stopRecord()
+      }
+
       return
     }
 
-    this.conversation = new Conversation(
-      {
-        vuiConfig: { name: this.props.name }
+    this.conversation = new Conversation({
+      config: {
+        name: this.props.name
       },
-      this.onChangeState,
-      this.onData,
-      this.onError,
-      this.visualizeAudioBuffer
-    )
+      onStateChange: this.onStateChange,
+      onSuccess: this.onData,
+      onError: this.onError,
+      onAudioData: this.onAudioData
+    })
 
     this.conversation.advanceConversation()
   }
 
-  render = () => (
-    <Provider
-      value={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
-        isRecognitionSupported: this.isRecognitionSupported,
-        isSynthesizerSupported: () => !!synth,
+  render () {
+    return (
+      <Provider
+        value={{ // eslint-disable-line react-perf/jsx-no-new-object-as-prop
+          isRecognitionSupported: this.isRecognitionSupported,
+          isSynthesizerSupported: () => !!synth,
 
-        speak: this.speak,
+          speak: this.speak,
 
-        buttonRef: this.buttonRef,
-        canvasRef: this.canvasRef,
-        canvasWrapperRef: this.canvasWrapperRef,
-        state: this.state.state,
-        transcript: this.state.transcript,
-        message: this.state.message,
-        width: this.state.width,
-        height: this.state.height,
+          buttonRef: this.buttonRef,
+          canvasRef: this.canvasRef,
+          canvasWrapperRef: this.canvasWrapperRef,
+          state: this.state.state,
+          transcript: this.state.transcript,
+          message: this.state.message,
+          width: this.state.width,
+          height: this.state.height,
 
-        onClick: this.onClick,
+          onClick: this.onClick,
 
-        init: this.init,
-        start: this.start,
-        abort: this.abort,
-        pause: this.pause,
-        resume: this.resume,
-        debug: this.debug,
-        setLanguage: this.setLanguage,
-        addSpeechHandlers: this.addSpeechHandlers,
-        removeSpeechHandlers: this.removeSpeechHandlers,
-        addCallback: this.addCallback,
-        removeCallback: this.removeCallback,
-        isListening: this.isListening,
-        trigger: this.trigger,
-        recognizing: this.state.recognizing,
-        listening: this.state.listening
-      }}
+          init: this.init,
+          start: this.start,
+          abort: this.abort,
+          pause: this.pause,
+          resume: this.resume,
+          debug: this.debug,
+          setLanguage: this.setLanguage,
+          addSpeechHandlers: this.addSpeechHandlers,
+          removeSpeechHandlers: this.removeSpeechHandlers,
+          addCallback: this.addCallback,
+          removeCallback: this.removeCallback,
+          isListening: this.isListening,
+          trigger: this.trigger,
+          recognizing: this.state.recognizing,
+          listening: this.state.listening
+        }}
 
-    >
-      {
-        this.props.children
-      }
-    </Provider>
-  )
+      >
+        {
+          this.props.children
+        }
+      </Provider>
+    )
+  }
 }

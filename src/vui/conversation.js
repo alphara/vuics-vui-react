@@ -1,153 +1,195 @@
-import AudioControl from './control';
+import AudioControl from './control'
 import settings from './settings'
-import axios from 'axios';
+import axios from 'axios'
 
-const DEFAULT_CONTENT_TYPE = 'audio/x-l16; sample-rate=16000';
+const DEFAULT_CONTENT_TYPE = 'audio/x-l16; sample-rate=16000'
 const DEFAULT_USER_ID = 'userId';
-const DEFAULT_ACCEPT_HEADER_VALUE = 'audio/mpeg';
+const DEFAULT_ACCEPT_HEADER_VALUE = 'audio/mpeg'
 const MESSAGES = Object.freeze({
   PASSIVE: 'Passive',
   LISTENING: 'Listening',
   SENDING: 'Sending',
   SPEAKING: 'Speaking'
-});
+})
 
-const audioControl = new AudioControl({ checkAudioSupport: false });
+const applyDefaults = ({
+  silenceDetection = true,
+  name = '',
+  contentType = DEFAULT_CONTENT_TYPE,
+  userId = DEFAULT_USER_ID,
+  accept = DEFAULT_ACCEPT_HEADER_VALUE
+} = {}) => ({
+  silenceDetection,
+  name,
+  contentType,
+  userId,
+  accept
+})
 
-const bufferToArrayBuffer = (buffer) => {
-  const ab = new ArrayBuffer(buffer.data.length);
+const bufferToArrayBuffer = ({ data }) => {
+  const ab = new ArrayBuffer(data.length)
 
-  const view = new Uint8Array(ab);
+  const view = new Uint8Array(ab)
 
-  for (let i = 0; i < buffer.data.length; ++i) {
-    view[i] = buffer.data[i];
+  for (let i = 0; i < data.length; ++i) {
+    view[i] = data[i]
   }
 
-  return ab;
+  return ab
 }
 
-function Conversation (config, onStateChange, onSuccess, onError, onAudioData) {
-  let currentState;
+class Conversation {
+  constructor ({
+    config,
+    onStateChange = () => {},
+    onSuccess = () => {},
+    onError = () => {},
+    onAudioData = () => {}
+  }) {
+    console.log('new Conversation')
+    this.audioControl = AudioControl
 
-  this.config = applyDefaults(config);
-  this.vuiConfig = this.config.vuiConfig;
-  this.messages = MESSAGES;
-  onStateChange = onStateChange || function () { /* no op */ };
-  this.onSuccess = onSuccess || function () { /* no op */ };
-  this.onError = onError || function () { /* no op */ };
-  this.onAudioData = onAudioData || function () { /* no op */ };
+    this.message = MESSAGES.PASSIVE
 
-  if (!this.config.vuiConfig.name) {
-    this.onError('A Bot name must be provided.');
-    return;
+    this.config = applyDefaults(config)
+
+    this.onStateChange = onStateChange
+    this.onSuccess = onSuccess
+    this.onError = onError
+    this.onAudioData = onAudioData
+
+    if (!this.config.name) {
+      this.onError('A Bot name must be provided.')
+
+      return
+    }
+
+    this.onSilence = this.onSilence.bind(this)
+    this.stopRecord = this.stopRecord.bind(this)
+    this.transition = this.transition.bind(this)
+    this.advanceConversation = this.advanceConversation.bind(this)
+    this.updateConfig = this.updateConfig.bind(this)
+    this.reset = this.reset.bind(this)
+
+    this.initialConversation = this.initialConversation.bind(this)
+    this.listeningConversation = this.listeningConversation.bind(this)
+    this.sendingConversation = this.sendingConversation.bind(this)
+    this.speakingConversation = this.speakingConversation.bind(this)
   }
 
-  this.onSilence = function onSilence () {
-    if (config.silenceDetection) {
-      audioControl.stopRecording();
-      currentState.advanceConversation();
+  onSilence () {
+    console.log('onSilence this.config.silenceDetection: ', this.config.silenceDetection)
+
+    if (this.config.silenceDetection) {
+      this.audioControl.stopRecording()
+
+      this.advanceConversation()
     }
-  };
+  }
 
-  this.stopRecord = function stopRecord () {
-    audioControl.stopRecording();
-    audioControl.clear();
-    currentState = new Initial(currentState.state)
+  stopRecord () {
+    this.audioControl.stopRecording()
+    this.audioControl.clear()
 
-    const state = currentState.state
-    onStateChange(state.message)
+    this.message = MESSAGES.PASSIVE
+
+    this.onStateChange(this.message)
+
     this.reset()
   }
 
-  this.transition = function transition (conversation) {
-    currentState = conversation;
-    const state = currentState.state;
-    onStateChange(state.message);
+  transition (message) {
+    this.message = message
+
+    this.onStateChange(message)
 
     if (
-      state.message === state.messages.SENDING ||
-      state.message === state.messages.SPEAKING
+      this.message === MESSAGES.SENDING ||
+      this.message === MESSAGES.SPEAKING
     ) {
-      currentState.advanceConversation();
+      this.advanceConversation()
     }
+
     if (
-      state.message === state.messages.SENDING &&
+      this.message === MESSAGES.SENDING &&
       !this.config.silenceDetection
     ) {
-      audioControl.stopRecording();
+      this.audioControl.stopRecording()
     }
-  };
+  }
 
-  this.advanceConversation = function advanceConversation () {
-    audioControl.supportsAudio(function supportsAudio (supported) {
+  advanceConversation () {
+    console.log('advanceConversation this.message: ', this.message)
+
+    this.audioControl.supportsAudio(supported => {
+      console.log('supportsAudio: ', supported)
+
       if (supported) {
-        currentState.advanceConversation();
+        switch (this.message) {
+          case MESSAGES.PASSIVE:
+            this.initialConversation()
+            break;
+          case MESSAGES.LISTENING:
+            this.listeningConversation()
+            break;
+          case MESSAGES.SENDING:
+            this.sendingConversation()
+            break;
+          case MESSAGES.SPEAKING:
+            this.speakingConversation()
+            break;
+          default:
+            break;
+        }
       } else {
-        onError('Audio is not supported.');
+        this.onError('Audio is not supported.')
       }
+    })
+  }
+
+  updateConfig (config) {
+    this.config = applyDefaults(config)
+  }
+
+  reset () {
+    this.transition(MESSAGES.PASSIVE)
+
+    this.audioControl.clear()
+  }
+
+  initialConversation () {
+    console.log('initialConversation: ', MESSAGES.LISTENING)
+
+    this.transition(MESSAGES.LISTENING)
+
+    this.audioControl.startRecording({
+      onSilence: this.onSilence,
+      visualizer: this.onAudioData,
+      config: this.config
     });
-  };
+  }
 
-  this.updateConfig = function updateConfig (config) {
-    this.config = applyDefaults(config);
-    this.vuiConfig = this.config.vuiConfig;
-  };
+  listeningConversation () {
+    console.log('listeningConversation: ', MESSAGES.SENDING)
 
-  this.reset = function reset () {
-    audioControl.clear();
-    currentState = new Initial(currentState.state);
-  };
+    this.transition(MESSAGES.SENDING)
 
-  currentState = new Initial(this);
+    this.audioControl.exportWAV((blob) => {
+      this.audioInput = blob
+    })
+  }
 
-  return {
-    advanceConversation: this.advanceConversation,
-    updateConfig: this.updateConfig,
-    reset: this.reset,
-    stopRecord: this.stopRecord
-  };
-}
+  sendingConversation () {
+    console.log('sendingConversation')
+    this.config.inputStream = this.audioInput
 
-function Initial (state) {
-  this.state = state;
-  state.message = state.messages.PASSIVE;
+    let data = new FormData()
 
-  this.advanceConversation = function advanceConversation () {
-    audioControl.startRecording(
-      state.onSilence,
-      state.onAudioData,
-      state.config.silenceDetectionConfig
-    );
-
-    state.transition(new Listening(state));
-  };
-}
-
-function Listening (state) {
-  this.state = state;
-  state.message = state.messages.LISTENING;
-
-  this.advanceConversation = function advanceConversation () {
-    audioControl.exportWAV(function exportWAV (blob) {
-      state.audioInput = blob;
-      state.transition(new Sending(state));
-    });
-  };
-}
-
-function Sending (state) {
-  this.state = state;
-  state.message = state.messages.SENDING;
-
-  this.advanceConversation = function advanceConversation () {
-    state.vuiConfig.inputStream = state.audioInput;
-
-    let data = new FormData();
-    data.append('inputStream', state.vuiConfig.inputStream);
-    data.append('name', state.vuiConfig.name);
-    data.append('contentType', state.vuiConfig.contentType);
-    data.append('userId', state.vuiConfig.userId);
-    data.append('accept', state.vuiConfig.accept);
+    data.append('inputStream', this.config.inputStream)
+    data.append('name', this.config.name)
+    data.append('contentType', this.config.contentType)
+    data.append('userId', this.config.userId)
+    data.append('accept', this.config.accept)
 
     // TODO: Add sending text requests
     //       In case of text, we have the following params:
@@ -161,68 +203,59 @@ function Sending (state) {
       headers: {
         'X-API-key': settings.apiKey
       }
-    }).then((response) => {
-      response.data.audioStream = bufferToArrayBuffer(response.data.audioStream);
-      state.audioOutput = response.data;
-      state.transition(new Speaking(state));
-      state.onSuccess(response.data);
+    }).then(({ data }) => {
+      data.audioStream = bufferToArrayBuffer(data.audioStream)
+
+      this.audioOutput = data
+
+      console.log('sendingConversation success: ', MESSAGES.SPEAKING)
+
+      this.transition(MESSAGES.SPEAKING)
+
+      this.onSuccess(data)
     }).catch((err) => {
-      state.onError(err);
-      state.transition(new Initial(state));
-    });
-  };
-}
+      console.log('sendingConversation error: ', MESSAGES.PASSIVE)
 
-function Speaking (state) {
-  this.state = state;
-  state.message = state.messages.SPEAKING;
+      this.transition(MESSAGES.PASSIVE)
 
-  this.advanceConversation = function advanceConversation () {
-    if (state.audioOutput.contentType === 'audio/mpeg') {
-      audioControl.play(state.audioOutput.audioStream, function play () {
-        if (state.audioOutput.dialogState === 'ReadyForFulfillment' ||
-          state.audioOutput.dialogState === 'Fulfilled' ||
-          state.audioOutput.dialogState === 'Failed' ||
-          !state.config.silenceDetection) {
-          state.transition(new Initial(state));
+      this.onError(err)
+    })
+  }
+
+  speakingConversation () {
+    console.log('speakingConversation')
+
+    if (this.audioOutput.contentType === 'audio/mpeg') {
+      this.audioControl.play(this.audioOutput.audioStream, () => {
+        if (
+          this.audioOutput.dialogState === 'ReadyForFulfillment' ||
+          this.audioOutput.dialogState === 'Fulfilled' ||
+          this.audioOutput.dialogState === 'Failed' ||
+          !this.config.silenceDetection
+        ) {
+          console.log('speakingConversation: ', MESSAGES.PASSIVE)
+
+          this.transition(MESSAGES.PASSIVE);
         } else {
-          audioControl.startRecording(state.onSilence, state.onAudioData, state.config.silenceDetectionConfig);
-          state.transition(new Listening(state));
+          console.log('speakingConversation: ', MESSAGES.LISTENING)
+
+          this.transition(MESSAGES.LISTENING)
+
+          this.audioControl.startRecording(
+            this.onSilence,
+            this.onAudioData,
+            this.config.silenceDetection
+          )
         }
-      });
+      })
     } else {
-      state.transition(new Initial(state));
+      console.error('speakingConversation Error: AudioOutput ContentType is ', this.audioOutput.contentType, ', but should be strictly audio/mpeg !')
+
+      console.log('speakingConversation: ', MESSAGES.PASSIVE)
+
+      this.transition(MESSAGES.PASSIVE)
     }
-  };
+  }
 }
 
-function applyDefaults (config) {
-  config = config || {};
-  config.silenceDetection = config.hasOwnProperty('silenceDetection')
-    ? config.silenceDetection
-    : true;
-
-  const vuiConfig = config.vuiConfig || {};
-
-  vuiConfig.name = vuiConfig.hasOwnProperty('name')
-    ? vuiConfig.name
-    : '';
-
-  vuiConfig.contentType = vuiConfig.hasOwnProperty('contentType')
-    ? vuiConfig.contentType
-    : DEFAULT_CONTENT_TYPE;
-
-  vuiConfig.userId = vuiConfig.hasOwnProperty('userId')
-    ? vuiConfig.userId
-    : DEFAULT_USER_ID;
-
-  vuiConfig.accept = vuiConfig.hasOwnProperty('accept')
-    ? vuiConfig.accept
-    : DEFAULT_ACCEPT_HEADER_VALUE;
-
-  config.vuiConfig = vuiConfig;
-
-  return config;
-}
-
-export default Conversation;
+export default Conversation

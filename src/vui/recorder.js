@@ -1,139 +1,175 @@
 import work from 'webworkify-webpack';
 
-const worker = work(require.resolve('./worker.js'));
-var audio_context, audio_stream;
+class Recorder {
+  constructor (source, { time = 1500, amplitude = 0.2 } = {}) {
+    console.log('new Recorder')
+    this.recording = false;
 
-var recorder = function (source, silenceDetectionConfig) {
+    this.start = 0;
 
-  silenceDetectionConfig = silenceDetectionConfig || {};
-  silenceDetectionConfig.time = silenceDetectionConfig.hasOwnProperty('time') ? silenceDetectionConfig.time : 1500;
-  silenceDetectionConfig.amplitude = silenceDetectionConfig.hasOwnProperty('amplitude') ? silenceDetectionConfig.amplitude : 0.2;
+    this.onAudioProcess = this.onAudioProcess.bind(this)
+    this.onMessage = this.onMessage.bind(this)
+    this.record = this.record.bind(this)
+    this.stop = this.stop.bind(this)
+    this.clear = this.clear.bind(this)
+    this.exportWAV = this.exportWAV.bind(this)
+    this.analyse = this.analyse.bind(this)
 
-  var recording = false,
-    currCallback, start, silenceCallback, visualizationCallback;
+    this.worker = work(require.resolve('./worker.js'))
+    this.worker.onmessage = this.onMessage
+    this.worker.postMessage({
+      command: 'init',
+      config: {
+        sampleRate: source.context.sampleRate
+      }
+    })
 
-  var node = source.context.createScriptProcessor(4096, 1, 1);
+    this.node = source.context.createScriptProcessor(4096, 1, 1)
+    this.node.onaudioprocess = this.onAudioProcess
 
-  worker.onmessage = function (message) {
-    var blob = message.data;
-    currCallback(blob);
-  };
+    this.analyser = source.context.createAnalyser()
+    this.analyser.minDecibels = -90
+    this.analyser.maxDecibels = -10
+    this.analyser.smoothingTimeConstant = 0.85
 
-  worker.postMessage({
-    command: 'init',
-    config: {
-      sampleRate: source.context.sampleRate,
+    source.connect(this.analyser)
+    this.analyser.connect(this.node)
+    this.node.connect(source.context.destination)
+
+    this.onSilence = this.onSilence.bind(this)
+    this.currCallback = this.currCallback.bind(this)
+    this.visualizationCallback = this.visualizationCallback.bind(this)
+  }
+
+  onSilence () {}
+
+  currCallback () {}
+
+  visualizationCallback () {}
+
+  onAudioProcess ({ inputBuffer }) {
+    if (!this.recording) {
+      return
     }
-  });
 
-  var record = function (onSilence, visualizer) {
-    silenceCallback = onSilence;
-    visualizationCallback = visualizer;
-    start = Date.now();
-    recording = true;
-  };
+    this.worker.postMessage({
+      command: 'record',
+      buffer: [
+        inputBuffer.getChannelData(0)
+      ]
+    })
 
-  var stop = function () {
-    recording = false;
-  };
+    this.analyse()
+  }
 
-  var clear = function () {
-    stop();
-    worker.postMessage({command: 'clear'});
-  };
+  onMessage ({ data }) {
+    this.currCallback(data);
+  }
 
-  var exportWAV = function (callback, sampleRate) {
-    currCallback = callback;
-    worker.postMessage({
+  record ({ onSilence, visualizer }) {
+    console.log('record')
+    this.onSilence = onSilence
+
+    this.visualizationCallback = visualizer
+
+    this.start = Date.now()
+
+    this.recording = true
+  }
+
+  stop () {
+    this.recording = false
+  }
+
+  clear = () => {
+    this.stop()
+
+    this.worker.postMessage({
+      command: 'clear'
+    })
+  }
+
+  exportWAV (callback, sampleRate) {
+    this.currCallback = callback;
+
+    this.worker.postMessage({
       command: 'export',
       sampleRate: sampleRate
     });
-  };
+  }
 
-  var analyse = function () {
-    analyser.fftSize = 2048;
-    var bufferLength = analyser.fftSize;
-    var dataArray = new Uint8Array(bufferLength);
-    var amplitude = silenceDetectionConfig.amplitude;
-    var time = silenceDetectionConfig.time;
+  analyse () {
+    this.analyser.fftSize = 2048;
 
-    analyser.getByteTimeDomainData(dataArray);
+    const dataArray = new Uint8Array(this.analyser.fftSize);
 
-    if (typeof visualizationCallback === 'function') {
-      visualizationCallback(dataArray, bufferLength);
+    this.analyser.getByteTimeDomainData(dataArray);
+
+    if (typeof this.visualizationCallback === 'function') {
+      this.visualizationCallback(dataArray, this.analyser.fftSize);
     }
 
-    for (var i = 0; i < bufferLength; i++) {
+    for (let i = 0; i < this.analyser.fftSize; i++) {
       // Normalize between -1 and 1.
-      var curr_value_time = (dataArray[i] / 128) - 1.0;
-      if (curr_value_time > amplitude || curr_value_time < (-1 * amplitude)) {
-        start = Date.now();
+      const curr_value_time = (dataArray[i] / 128) - 1.0;
+
+      if (curr_value_time > this.amplitude || curr_value_time < (-1 * this.amplitude)) {
+        this.start = Date.now();
       }
     }
-    var newtime = Date.now();
-    var elapsedTime = newtime - start;
-    if (elapsedTime > time) {
-      silenceCallback();
+
+    if ((Date.now() - this.start) > this.time) {
+      this.onSilence();
     }
-  };
+  }
+}
 
-  node.onaudioprocess = function (audioProcessingEvent) {
-    if (!recording) {
-      return;
-    }
-    worker.postMessage({
-      command: 'record',
-      buffer: [
-        audioProcessingEvent.inputBuffer.getChannelData(0),
-      ]
-    });
-    analyse();
-  };
+class AudioRecorder {
+  constructor () {
+    console.log('new AudioRecorder')
+    this.audioContext = null
+    this.audioStream = null
+    this.recorder = null
 
-  var analyser = source.context.createAnalyser();
-  analyser.minDecibels = -90;
-  analyser.maxDecibels = -10;
-  analyser.smoothingTimeConstant = 0.85;
+    this.requestDevice = this.requestDevice.bind(this)
+    this.createRecorder = this.createRecorder.bind(this)
+    this.getAudioContext = this.getAudioContext.bind(this)
+  }
 
-  source.connect(analyser);
-  analyser.connect(node);
-  node.connect(source.context.destination);
+  requestDevice () {
+    if (this.audioContext === null) {
+      window.AudioContext = window.AudioContext || window.webkitAudioContext
 
-  return {
-    record: record,
-    stop: stop,
-    clear: clear,
-    exportWAV: exportWAV
-  };
-};
-
-const AudioRecorder = function () {
-  var requestDevice = function () {
-
-    if (typeof audio_context === 'undefined') {
-      window.AudioContext = window.AudioContext || window.webkitAudioContext;
-      audio_context = new AudioContext();
+      this.audioContext = new window.AudioContext()
     }
 
-    return navigator.mediaDevices.getUserMedia({audio: true}).then(function (stream) {
-      audio_stream = stream;
-    });
-  };
+    return navigator.mediaDevices
+      .getUserMedia({
+        audio: true
+      })
+      .then((stream) => {
+        this.audioStream = stream;
+      })
+  }
 
-  var createRecorder = function (silenceDetectionConfig) {
-    return recorder(audio_context.createMediaStreamSource(audio_stream), silenceDetectionConfig);
-  };
+  createRecorder (config) {
+    if (this.recorder !== null) {
+      return this.recorder
+    } else {
+      this.recorder = new Recorder(
+        this.audioContext.createMediaStreamSource(this.audioStream),
+        config
+      )
+    }
 
-  var audioContext = function () {
-    return audio_context;
-  };
+    return this.recorder
+  }
 
-  return {
-    requestDevice: requestDevice,
-    createRecorder: createRecorder,
-    audioContext: audioContext
-  };
+  getAudioContext () {
+    return this.audioContext
+  }
+}
 
-};
+const Instance = new AudioRecorder()
 
-export default AudioRecorder;
+export default Instance

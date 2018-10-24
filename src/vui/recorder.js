@@ -3,9 +3,11 @@ import work from 'webworkify-webpack';
 class Recorder {
   constructor (source, { time = 1500, amplitude = 0.2 } = {}) {
     console.log('new Recorder')
-    this.recording = false;
+    this.recording = false
 
-    this.start = 0;
+    this.start = 0
+    this.time = time
+    this.amplitude = amplitude
 
     this.onAudioProcess = this.onAudioProcess.bind(this)
     this.onMessage = this.onMessage.bind(this)
@@ -98,22 +100,49 @@ class Recorder {
     });
   }
 
+  // analyser.fftSize = 2048;
+  // var bufferLength = analyser.fftSize;
+  // var dataArray = new Uint8Array(bufferLength);
+  // var amplitude = silenceDetectionConfig.amplitude;
+  // var time = silenceDetectionConfig.time;
+  //
+  // analyser.getByteTimeDomainData(dataArray);
+  //
+  // if (typeof visualizationCallback === 'function') {
+  //   visualizationCallback(dataArray, bufferLength);
+  // }
+  //
+  // for (var i = 0; i < bufferLength; i++) {
+  //   // Normalize between -1 and 1.
+  //   var curr_value_time = (dataArray[i] / 128) - 1.0;
+  //   if (curr_value_time > amplitude || curr_value_time < (-1 * amplitude)) {
+  //     start = Date.now();
+  //   }
+  // }
+  // var newtime = Date.now();
+  // var elapsedTime = newtime - start;
+  // if (elapsedTime > time) {
+  //   silenceCallback();
+  // }
+
   analyse () {
     this.analyser.fftSize = 2048;
 
-    const dataArray = new Uint8Array(this.analyser.fftSize);
+    const bufferLength = this.analyser.fftSize
+
+    const dataArray = new Uint8Array(bufferLength);
 
     this.analyser.getByteTimeDomainData(dataArray);
 
     if (typeof this.visualizationCallback === 'function') {
-      this.visualizationCallback(dataArray, this.analyser.fftSize);
+      this.visualizationCallback(dataArray, bufferLength);
     }
 
-    for (let i = 0; i < this.analyser.fftSize; i++) {
+    for (let i = 0; i < bufferLength; i++) {
       // Normalize between -1 and 1.
-      const curr_value_time = (dataArray[i] / 128) - 1.0;
+      const currValueTime = (dataArray[i] / 128) - 1.0;
 
-      if (curr_value_time > this.amplitude || curr_value_time < (-1 * this.amplitude)) {
+      if (currValueTime > this.amplitude || currValueTime < (-1 * this.amplitude)) {
         this.start = Date.now();
       }
     }

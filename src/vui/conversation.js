@@ -149,13 +149,20 @@ function Sending (state) {
     data.append('userId', state.vuiConfig.userId);
     data.append('accept', state.vuiConfig.accept);
 
+    const headers = { };
+    if (state.vuiConfig.authToken) {
+      headers['Authorization'] = state.vuiConfig.authToken;
+    } else if (state.vuiConfig.apiKey) {
+      headers['X-API-key'] = state.vuiConfig.apiKey;
+    } else {
+      headers['X-API-key'] = settings.apiKey;
+    }
+
     axios({
       method: 'post',
       url: `${settings.apiUrl}/vui-server/content`,
       data,
-      headers: {
-        'X-API-key': settings.apiKey
-      }
+      headers,
     }).then((response) => {
       response.data.audioStream = bufferToArrayBuffer(response.data.audioStream);
       state.audioOutput = response.data;
@@ -201,6 +208,14 @@ function applyDefaults (config) {
 
   vuiConfig.name = vuiConfig.hasOwnProperty('name')
     ? vuiConfig.name
+    : '';
+
+  vuiConfig.authToken = vuiConfig.hasOwnProperty('authToken')
+    ? vuiConfig.authToken
+    : '';
+
+  vuiConfig.apiKey = vuiConfig.hasOwnProperty('apiKey')
+    ? vuiConfig.apiKey
     : '';
 
   vuiConfig.contentType = vuiConfig.hasOwnProperty('contentType')

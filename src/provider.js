@@ -30,6 +30,9 @@ export default class Vuics extends Component {
     children: PropTypes.node.isRequired,
 
     name: PropTypes.string.isRequired,
+    authToken: PropTypes.string,
+    apiKey: PropTypes.string,
+
     onConversationData: PropTypes.func.isRequired,
 
     fillStyle: PropTypes.string,
@@ -239,7 +242,9 @@ export default class Vuics extends Component {
     this.conversation = new Conversation(
       {
         vuiConfig: {
-          name: this.props.name
+          name: this.props.name,
+          authToken: this.props.authToken,
+          apiKey: this.props.apiKey,
         }
       },
       this.onChangeState,

@@ -47,6 +47,7 @@ export default class App extends Component {
     // trigger // func
   }) => {
     console.log('greeting:', greeting, ', vuiname:', vuiname);
+    abort(); // alternative way: Recognizer.pause();
 
     speak({
       phrase: 'Listening',
@@ -54,20 +55,12 @@ export default class App extends Component {
 
       },
       onSpeechEnd: (event) => {
-
+        onClick()
       },
       voiceIndex: 0,
       pitch: 1,
       rate: 1
     });
-
-    setTimeout(() => {
-      console.log('wakeUp')
-
-      onClick()
-    }, 1000);
-
-    abort(); // alternative way: Recognizer.pause();
   }
 
   onGoodbay = ([[
@@ -95,7 +88,7 @@ export default class App extends Component {
     // isListening, // func
     // trigger // func
   }]) => {
-    console.log('farewell:', farewell, ', vuiname:', vuiname);
+    // console.log('farewell:', farewell, ', vuiname:', vuiname);
 
     speak({
       phrase: 'Talk to you soon',

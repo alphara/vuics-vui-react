@@ -149,8 +149,11 @@ function Sending (state) {
     data.append('userId', state.vuiConfig.userId);
     data.append('accept', state.vuiConfig.accept);
 
+    let url = `${settings.apiUrl}/vui-server/content`;
     const headers = { };
+
     if (state.vuiConfig.authToken) {
+      url = `${settings.apiUrl}/server/content`;
       headers['Authorization'] = state.vuiConfig.authToken;
     } else if (state.vuiConfig.apiKey) {
       headers['X-API-key'] = state.vuiConfig.apiKey;
@@ -160,7 +163,7 @@ function Sending (state) {
 
     axios({
       method: 'post',
-      url: `${settings.apiUrl}/vui-server/content`,
+      url,
       data,
       headers,
     }).then((response) => {

@@ -114,7 +114,9 @@ export default class App extends Component {
               </Message>
               <p>
                 <b>Try</b> to <i>code</i> it on the&nbsp;
-                <a href="https://vuics.com/builder" target="_blank"><b>Vuics.com</b></a>&nbsp;
+                <a href="https://vuics.com/builder" target="_blank" rel="noopener noreferrer">
+                  <b>Vuics.com</b>
+                </a>&nbsp;
                 platform.
               </p>
             </Accordion.Content>

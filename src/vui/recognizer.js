@@ -32,9 +32,14 @@ class Recognizer {
       errorPermissionBlocked: [],
       errorPermissionDenied: []
     },
+    onRecognitionStart = () => {},
+    onRecognitionSoundStart = () => {},
+    onRecognitionEnd = () => {},
+    onRecognitionResult = () => {},
+    onRecognitionError = () => {},
     commands = {},
     autoRestart = true,
-    debugState = true,
+    debugState = false,
     locale = 'en-US', // 'ru-RU'
     api
   } = {}) {
@@ -51,6 +56,12 @@ class Recognizer {
 
     this.pauseListening = false
     this.listening = false
+
+    this.onRecognitionStart = onRecognitionStart
+    this.onRecognitionSoundStart = onRecognitionSoundStart
+    this.onRecognitionError = onRecognitionError
+    this.onRecognitionEnd = onRecognitionEnd
+    this.onRecognitionResult = onRecognitionResult
 
     this._onRecognitionStart = this._onRecognitionStart.bind(this)
     this._onRecognitionSoundStart = this._onRecognitionSoundStart.bind(this)
@@ -74,7 +85,8 @@ class Recognizer {
     this.trigger = this.trigger.bind(this)
 
     this.addRecognizerHandlers = this.addRecognizerHandlers.bind(this)
-    this.removeCommands = this.removeCommands.bind(this)
+    this.removeRecognizerHandlers = this.removeRecognizerHandlers.bind(this)
+
     this.addCallback = this.addCallback.bind(this)
     this.removeCallback = this.removeCallback.bind(this)
 
@@ -133,7 +145,7 @@ class Recognizer {
       resume: this.resume,
       debug: this.debug,
       addCommands: this.addCommands,
-      removeCommands: this.removeCommands,
+      removeRecognizerHandlers: this.removeRecognizerHandlers,
       addCallback: this.addCallback,
       removeCallback: this.removeCallback,
       changeLocale: this.changeLocale,
@@ -143,8 +155,6 @@ class Recognizer {
   }
 
   _invokeCallbacks (callbacks, ...args) {
-    console.log('_invokeCallbacks args: ', args)
-
     callbacks.length > 0 &&
     callbacks.forEach((callback) => {
       callback.callback.apply(callback.context, [args, this.getApi()])
@@ -152,16 +162,24 @@ class Recognizer {
   }
 
   _onRecognitionStart () {
+    this.onRecognitionStart()
+
     this.listening = true
 
     this._invokeCallbacks(this.callbacks.start, this.getApi())
   }
 
   _onRecognitionSoundStart () {
+    this.onRecognitionSoundStart()
+
     this._invokeCallbacks(this.callbacks.soundstart, this.getApi())
   }
 
   _onRecognitionError (event) {
+    this.onRecognitionError(event)
+
+    this.listening = false
+
     this._invokeCallbacks(this.callbacks.error, event, this.getApi())
 
     switch (event.error) {
@@ -186,6 +204,8 @@ class Recognizer {
   }
 
   _onRecognitionEnd () {
+    this.onRecognitionEnd()
+
     this.listening = false
 
     this._invokeCallbacks(this.callbacks.end, this.getApi())
@@ -216,6 +236,8 @@ class Recognizer {
   }
 
   _onRecognitionResult (event) {
+    this.onRecognitionResult(event)
+
     if (this.pauseListening) {
       if (this.debugState) {
         logMessage('Speech heard, but recognizer is paused')
@@ -308,21 +330,15 @@ class Recognizer {
     return !!this.SpeechRecognition
   }
 
-  start (options = {}) {
-    if (options.paused !== undefined) {
-      this.pauseListening = !!options.paused
-    } else {
-      this.pauseListening = false
-    }
+  start ({ paused = false, autoRestart = true, continuous } = {}) {
+    console.log('recognizer start')
 
-    if (options.autoRestart !== undefined) {
-      this.autoRestart = !!options.autoRestart
-    } else {
-      this.autoRestart = true
-    }
+    this.pauseListening = paused
 
-    if (options.continuous !== undefined) {
-      this.recognition.continuous = !!options.continuous
+    this.autoRestart = autoRestart
+
+    if (continuous !== undefined) {
+      this.recognition.continuous = !!continuous
     }
 
     this.lastStartedAt = new Date().getTime()
@@ -372,24 +388,9 @@ class Recognizer {
         }
       }
     })
-    // for (let phrase in commands) {
-    //   if (commands.hasOwnProperty(phrase)) {
-    //     cb = commands[phrase]
-    //
-    //     if (typeof cb === 'function') {
-    //       this._registerCommand(commandToRegExp(phrase), cb, phrase)
-    //     } else if (typeof cb === 'object' && cb.regexp instanceof RegExp) {
-    //       this._registerCommand(new RegExp(cb.regexp.source, 'i'), cb.callback, phrase);
-    //     } else {
-    //       if (debugState) {
-    //         logMessage('Can not register command: %c' + phrase, debugStyle);
-    //       }
-    //     }
-    //   }
-    // }
   }
 
-  removeCommands (commandsToRemove) {
+  removeRecognizerHandlers (commandsToRemove) {
     if (commandsToRemove === undefined) {
       this.commandsList = []
     } else {
@@ -428,17 +429,6 @@ class Recognizer {
         }
       }
     })
-    // for (let callbackType in callbacks) {
-    //   if (callbacks.hasOwnProperty(callbackType)) {
-    //     if (type === undefined || type === callbackType) {
-    //       if (callback === undefined) {
-    //         callbacks[callbackType] = [];
-    //       } else {
-    //         callbacks[callbackType] = callbacks[callbackType].filter(cb => cb.callback !== callback)
-    //       }
-    //     }
-    //   }
-    // }
   }
 
   isListening () {

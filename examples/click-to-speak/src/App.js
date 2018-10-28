@@ -40,7 +40,6 @@ export default class App extends Component {
     //   transcript, // string
     //   message, // string
     //
-    //   recognizing, // bool,
     //   listening, // bool
     //
     //   onClick, // func
@@ -80,9 +79,6 @@ export default class App extends Component {
     //   state, // string
     //   transcript, // string
     //   message, // string
-    //
-    //   recognizing, // bool,
-    //   listening, // bool
     //
     //   onClick, // func
     //
@@ -177,11 +173,10 @@ export default class App extends Component {
 
       <VuicsConsumer>
         {
-          ({ buttonRef, onClick, state, message }) => (
+          ({ onClick, state, message }) => (
             <Button
               className='button'
               onClick={onClick}
-              ref={buttonRef}
               size='huge'
               color='green'
             >

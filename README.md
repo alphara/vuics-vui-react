@@ -98,7 +98,6 @@ export default class App extends Component {
       transcript, // string
       message, // string
 
-      recognizing, // bool,
       listening, // bool
 
       onClick, // func

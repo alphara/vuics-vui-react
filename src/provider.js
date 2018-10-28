@@ -1,6 +1,5 @@
 import React, {
   Component,
-  createRef,
   createContext
 } from 'react'
 import PropTypes from 'prop-types'
@@ -18,66 +17,6 @@ export const {
 } = createContext('VuicsContext')
 
 export default class Vuics extends Component {
-  constructor (props) {
-    super(props)
-
-    this.state = {
-      state: 'Passive',
-      transcript: '',
-      listening: false,
-      message: 'Click to Speak!'
-    }
-
-    this.setCanvasDimensions = this.setCanvasDimensions.bind(this)
-    this.onStateChange = this.onStateChange.bind(this)
-    this.onAudioData = this.onAudioData.bind(this)
-    this.onData = this.onData.bind(this)
-    this.onError = this.onError.bind(this)
-    this.onClick = this.onClick.bind(this)
-
-    this.onSpeechStart = this.onSpeechStart.bind(this)
-    this.onSpeechEnd = this.onSpeechEnd.bind(this)
-    this.onSpeechError = this.onSpeechError.bind(this)
-
-    this.buttonRef = createRef()
-    this.canvasWrapperRef = createRef()
-    this.canvasRef = createRef()
-
-    this.conversation = null
-    this.canvasCtx = null
-
-    this.synthesizer = generateSyntesizer({
-      voiceIndex: 0,
-      pitch: 1,
-      rate: 1,
-      onSpeechStart: this.onSpeechStart,
-      onSpeechEnd: this.onSpeechEnd,
-      onSpeechError: this.onSpeechError
-    })
-
-    this.recognizer = generateRecognizer({
-      callbacks: props.recognitionCallbacks,
-      commands: props.recognizerHandlers,
-      autoRestart: true,
-      debugState: true,
-      locale: props.locale,
-      api: {
-        isSynthesizerSupported: this.synthesizer.isSynthesizerSupported,
-        changeVoiceIndex: this.synthesizer.changeVoiceIndex,
-        changePitch: this.synthesizer.changePitch,
-        changeRate: this.synthesizer.changeRate,
-        speak: this.synthesizer.speak,
-
-        state: this.state.state,
-        transcript: this.state.transcript,
-        message: this.state.message,
-        recognizing: this.state.recognizing,
-
-        onClick: this.onClick
-      }
-    })
-  }
-
   static propTypes = {
     locale: PropTypes.string.isRequired,
 
@@ -113,6 +52,83 @@ export default class Vuics extends Component {
     recognizerHandlers: {}
   }
 
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      state: 'Passive',
+      transcript: '',
+      listening: false,
+      speaking: false,
+      recognizing: false,
+      message: 'Click to Speak!'
+    }
+
+    this.onClick = this.onClick.bind(this)
+
+    this.clearCanvas = this.clearCanvas.bind(this)
+    this.getCanvasRef = this.getCanvasRef.bind(this)
+    this.getCanvasWrapperRef = this.getCanvasWrapperRef.bind(this)
+    this.setCanvasDimensions = this.setCanvasDimensions.bind(this)
+
+    this.onConversationStateChange = this.onConversationStateChange.bind(this)
+    this.onConversationSuccess = this.onConversationSuccess.bind(this)
+    this.onConversationError = this.onConversationError.bind(this)
+    this.onAudioData = this.onAudioData.bind(this)
+
+    this.onRecognitionStart = this.onRecognitionStart.bind(this)
+    this.onRecognitionSoundStart = this.onRecognitionSoundStart.bind(this)
+    this.onRecognitionEnd = this.onRecognitionEnd.bind(this)
+    this.onRecognitionResult = this.onRecognitionResult.bind(this)
+    this.onRecognitionError = this.onRecognitionError.bind(this)
+
+    this.onSpeechStart = this.onSpeechStart.bind(this)
+    this.onSpeechEnd = this.onSpeechEnd.bind(this)
+    this.onSpeechError = this.onSpeechError.bind(this)
+
+    this.canvasWrapperRef = null
+    this.canvasRef = null
+    this.canvasCtx = null
+
+    this.conversation = null
+
+    this.synthesizer = generateSyntesizer({
+      voiceIndex: 0,
+      pitch: 1,
+      rate: 1,
+      onSpeechStart: this.onSpeechStart,
+      onSpeechEnd: this.onSpeechEnd,
+      onSpeechError: this.onSpeechError
+    })
+
+    this.recognizer = generateRecognizer({
+      callbacks: props.recognitionCallbacks,
+      commands: props.recognizerHandlers,
+      autoRestart: true,
+      debugState: true,
+      locale: props.locale,
+      api: {
+        isSynthesizerSupported: this.synthesizer.isSynthesizerSupported,
+        changeVoiceIndex: this.synthesizer.changeVoiceIndex,
+        changePitch: this.synthesizer.changePitch,
+        changeRate: this.synthesizer.changeRate,
+        speak: this.synthesizer.speak,
+
+        speaking: this.state.speaking,
+        state: this.state.state,
+        transcript: this.state.transcript,
+        message: this.state.message,
+
+        onClick: this.onClick
+      },
+      onRecognitionStart: this.onRecognitionStart,
+      onRecognitionSoundStart: this.onRecognitionSoundStart,
+      onRecognitionEnd: this.onRecognitionEnd,
+      onRecognitionResult: this.onRecognitionResult,
+      onRecognitionError: this.onRecognitionError
+    })
+  }
+
   componentDidMount () {
     this.recognizer.addRecognizerHandlers(this.props.recognizerHandlers)
 
@@ -120,99 +136,208 @@ export default class Vuics extends Component {
 
     this.setCanvasDimensions()
 
-    this.canvasCtx = this.canvasRef.current.getContext('2d')
+    if (this.canvasRef !== null) {
+      this.canvasCtx = this.canvasRef.getContext('2d')
+    }
   }
 
   componentWillUnmount () {
     window.removeEventListener('resize', this.setCanvasDimensions)
   }
 
-  onSpeechStart () {
+  getCanvasRef (ref) {
+    this.canvasRef = ref
+  }
 
+  getCanvasWrapperRef (ref) {
+    this.canvasWrapperRef = ref
+  }
+
+  setCanvasDimensions () {
+    if (this.canvasWrapperRef !== null) {
+      this.setState(
+        () => ({
+          width: this.canvasWrapperRef.clientWidth,
+          height: this.canvasWrapperRef.clientHeight
+        })
+      )
+    }
+  }
+
+  onRecognitionStart () {
+    console.log('onRecognitionStart')
+
+    this.setState(
+      () => ({
+        recognizing: true
+      })
+    )
+  }
+  onRecognitionSoundStart () {
+    console.log('onRecognitionSoundStart')
+
+    this.setState(
+      () => ({
+        recognizing: true
+      })
+    )
+  }
+  onRecognitionEnd () {
+    console.log('onRecognitionEnd')
+
+    this.setState(
+      () => ({
+        recognizing: false
+      })
+    )
+  }
+  onRecognitionResult () {
+    console.log('onRecognitionResult')
+
+    this.setState(
+      () => ({
+        recognizing: false
+      })
+    )
+  }
+  onRecognitionError () {
+    console.log('onRecognitionError')
+
+    this.setState(
+      () => ({
+        recognizing: false
+      })
+    )
+  }
+
+  onSpeechStart () {
+    console.log('onSpeechStart')
+
+    this.setState(
+      () => ({
+        speaking: true
+      })
+    )
   }
 
   onSpeechEnd (e) {
     console.log('onSpeechEnd e: ', e)
+
+    this.setState(
+      () => ({
+        speaking: false
+      })
+    )
   }
 
   onSpeechError (e) {
     console.log('onSpeechError e: ', e)
-  }
 
-  setCanvasDimensions () {
     this.setState(
       () => ({
-        width: this.canvasWrapperRef.current.clientWidth,
-        height: this.canvasWrapperRef.current.clientHeight
+        speaking: false
       })
     )
   }
 
   onAudioData (dataArray, bufferLength) {
-    var animationId
+    if (this.canvasRef !== null) {
+      let animationId
 
-    this.canvasCtx
-      .clearRect(
-        0,
-        0,
-        this.canvasRef.current.clientWidth,
-        this.canvasRef.current.clientHeight
-      )
+      this.canvasCtx
+        .clearRect(
+          0,
+          0,
+          this.canvasRef.clientWidth,
+          this.canvasRef.clientHeight
+        )
 
-    const draw = () => {
-      if (!this.state.listening) {
-        return
+      const draw = () => {
+        if (!this.state.listening) {
+          return
+        }
+
+        this.canvasCtx.fillStyle = this.props.fillStyle
+
+        this.canvasCtx
+          .fillRect(
+            0,
+            0,
+            this.canvasRef.clientWidth,
+            this.canvasRef.clientHeight
+          )
+
+        this.canvasCtx.lineWidth = this.props.lineWidth
+
+        this.canvasCtx.strokeStyle = this.props.strokeStyle
+
+        this.canvasCtx.beginPath()
+
+        const sliceWidth = this.canvasRef.clientWidth * 1.0 / bufferLength
+
+        let x = 0
+
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0
+          const y = v * this.canvasRef.clientHeight / 2
+
+          if (i === 0) {
+            this.canvasCtx.moveTo(x, y)
+          } else {
+            this.canvasCtx.lineTo(x, y)
+          }
+
+          x += sliceWidth
+        }
+
+        this.canvasCtx
+          .lineTo(
+            this.canvasRef.width,
+            this.canvasRef.height / 2
+          )
+
+        this.canvasCtx.stroke()
       }
 
-      this.canvasCtx.fillStyle = this.props.fillStyle
+      if (typeof animationId === 'undefined') {
+        animationId = window.requestAnimationFrame(draw)
+      }
+    }
+  }
 
+  clearCanvas = () => {
+    if (this.canvasRef !== null) {
       this.canvasCtx
         .fillRect(
           0,
           0,
-          this.canvasRef.current.clientWidth,
-          this.canvasRef.current.clientHeight
+          this.canvasRef.clientWidth,
+          this.canvasRef.clientHeight
         )
-
-      this.canvasCtx.lineWidth = this.props.lineWidth
-
-      this.canvasCtx.strokeStyle = this.props.strokeStyle
-
-      this.canvasCtx.beginPath()
-
-      const sliceWidth = this.canvasRef.current.clientWidth * 1.0 / bufferLength
-
-      let x = 0
-
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0
-        const y = v * this.canvasRef.current.clientHeight / 2
-
-        if (i === 0) {
-          this.canvasCtx.moveTo(x, y)
-        } else {
-          this.canvasCtx.lineTo(x, y)
-        }
-
-        x += sliceWidth
-      }
 
       this.canvasCtx
-        .lineTo(
-          this.canvasRef.current.width,
-          this.canvasRef.height / 2
+        .clearRect(
+          0,
+          0,
+          this.canvasRef.clientWidth,
+          this.canvasRef.clientHeight
         )
-
-      this.canvasCtx.stroke()
-    }
-
-    if (typeof animationId === 'undefined') {
-      animationId = window.requestAnimationFrame(draw)
     }
   }
 
-  onStateChange (state) {
+  onConversationStateChange (state) {
     console.log('state:', state)
+
+    if (state === 'Passive') {
+      this.setState(
+        () => ({
+          state,
+          listening: false
+        })
+      )
+
+      this.clearCanvas()
+    }
 
     if (state === 'Listening') {
       this.setState(
@@ -231,46 +356,7 @@ export default class Vuics extends Component {
         })
       )
 
-      this.canvasCtx
-        .fillRect(
-          0,
-          0,
-          this.canvasRef.current.clientWidth,
-          this.canvasRef.current.clientHeight
-        )
-
-      this.canvasCtx
-        .clearRect(
-          0,
-          0,
-          this.canvasRef.current.clientWidth,
-          this.canvasRef.current.clientHeight
-        )
-    }
-
-    if (state === 'Passive') {
-      this.setState(
-        () => ({
-          state,
-          listening: false
-        })
-      )
-
-      this.canvasCtx
-        .fillRect(
-          0,
-          0,
-          this.canvasRef.current.clientWidth,
-          this.canvasRef.current.clientHeight
-        )
-
-      this.canvasCtx
-        .clearRect(
-          0,
-          0,
-          this.canvasRef.current.clientWidth,
-          this.canvasRef.current.clientHeight
-        )
+      this.clearCanvas()
     }
 
     if (state === 'Speaking') {
@@ -283,7 +369,7 @@ export default class Vuics extends Component {
     }
   }
 
-  onData (data) {
+  onConversationSuccess (data) {
     console.log('data:', data)
 
     console.log('Transcript:', data.inputTranscript, ', Response:', data.message)
@@ -335,8 +421,8 @@ export default class Vuics extends Component {
     )
   }
 
-  onError (error) {
-    console.log('onError error: ', error)
+  onConversationError (error) {
+    console.log('onConversationError error: ', error)
   }
 
   onClick () {
@@ -359,9 +445,9 @@ export default class Vuics extends Component {
         name: this.props.name
       },
       synthesizer: this.synthesizer,
-      onStateChange: this.onStateChange,
-      onSuccess: this.onData,
-      onError: this.onError,
+      onStateChange: this.onConversationStateChange,
+      onSuccess: this.onConversationSuccess,
+      onError: this.onConversationError,
       onAudioData: this.onAudioData
     })
 
@@ -377,9 +463,11 @@ export default class Vuics extends Component {
 
           speak: this.synthesizer.speak,
 
-          buttonRef: this.buttonRef,
-          canvasRef: this.canvasRef,
-          canvasWrapperRef: this.canvasWrapperRef,
+          getCanvasRef: this.getCanvasRef,
+          getCanvasWrapperRef: this.getCanvasWrapperRef,
+
+          listening: this.state.listening,
+          speaking: this.state.speaking,
           state: this.state.state,
           transcript: this.state.transcript,
           message: this.state.message,
@@ -399,11 +487,8 @@ export default class Vuics extends Component {
           addCallback: this.recognizer.addCallback,
           removeCallback: this.recognizer.removeCallback,
           isListening: this.recognizer.isListening,
-          trigger: this.recognizer.trigger,
-          recognizing: this.state.recognizing,
-          listening: this.state.listening
+          trigger: this.recognizer.trigger
         }}
-
       >
         {
           this.props.children

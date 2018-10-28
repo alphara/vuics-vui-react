@@ -15,18 +15,18 @@ class Oscilloscope extends Component {
     <Consumer>
       {
         ({
-          canvasWrapperRef,
-          canvasRef,
+          getCanvasWrapperRef,
+          getCanvasRef,
           width,
           height
         }) => (
           <div
             className={this.props.canvasWrapperClassName}
-            ref={canvasWrapperRef}
+            ref={getCanvasWrapperRef}
           >
             <canvas
               className={this.props.canvasClassName}
-              ref={canvasRef}
+              ref={getCanvasRef}
               width={width}
               height={height}
             />

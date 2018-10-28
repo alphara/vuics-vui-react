@@ -34,7 +34,6 @@ export default class App extends Component {
     // transcript, // string
     // message, // string
     //
-    // recognizing, // bool,
     // listening, // bool
     //
     // start, // func
@@ -63,7 +62,7 @@ export default class App extends Component {
     });
   }
 
-  onGoodbay = ([[
+  onGoodbay = ([
     farewell,
     vuiname
   ], {
@@ -76,7 +75,6 @@ export default class App extends Component {
     // transcript, // string
     // message, // string
     //
-    // recognizing, // bool,
     // listening, // bool
     //
     // start, // func
@@ -87,7 +85,7 @@ export default class App extends Component {
     // changeLocale, // func
     // isListening, // func
     // trigger // func
-  }]) => {
+  }) => {
     // console.log('farewell:', farewell, ', vuiname:', vuiname);
 
     speak({
@@ -125,7 +123,6 @@ export default class App extends Component {
       // transcript, // string
       // message, // string
       //
-      // recognizing, // bool,
       // listening, // bool
       //
       // onClick, // func
@@ -168,7 +165,6 @@ export default class App extends Component {
       // transcript, // string
       // message, // string
       //
-      // recognizing, // bool,
       // listening, // bool
       //
       // onClick, // func
@@ -287,15 +283,13 @@ export default class App extends Component {
       <VuicsConsumer>
         {
           ({
-            buttonRef, // object
             onClick, // func
 
             state, // string
-            transcript, // string
+            // transcript, // string
             message, // string
 
-            recognizing, // bool
-            listening, // bool
+            // listening, // bool
 
             speak, // func
 
@@ -304,14 +298,14 @@ export default class App extends Component {
 
             start, // func
             abort, // func
-            pause, // func
-            resume, // func
-            debug, // func
-            changeLocale, // func
-            addRecognizerHandlers, // func
-            removeRecognizerHandlers, // func
-            addCallback, // func
-            removeCallback, // func
+            // pause, // func
+            // resume, // func
+            // debug, // func
+            // changeLocale, // func
+            // addRecognizerHandlers, // func
+            // removeRecognizerHandlers, // func
+            // addCallback, // func
+            // removeCallback, // func
             isListening, // func
             trigger // func
           }) => (
@@ -346,7 +340,7 @@ export default class App extends Component {
                     : 'No browser support of Wake-Word '
                 }
                 disabled={!isRecognitionSupported()}
-                checked={recognizing}
+                checked={isListening()}
                 onChange={(event, data) => {
                   if (data.checked) {
                     speak({
@@ -389,7 +383,6 @@ export default class App extends Component {
               <Button
                 className='button'
                 onClick={onClick}
-                ref={buttonRef}
                 size='huge'
                 color='green'
               >

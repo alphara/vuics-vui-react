@@ -17,6 +17,7 @@ class Synthesizer {
     this.onSpeechEnd = onSpeechEnd
     this.onSpeechError = onSpeechError
 
+    this.isSynthesizerSupported = this.isSynthesizerSupported.bind(this)
     this._onVoicesChanged = this._onVoicesChanged.bind(this)
     this.changeVoiceIndex = this.changeVoiceIndex.bind(this)
     this.changePitch = this.changePitch.bind(this)

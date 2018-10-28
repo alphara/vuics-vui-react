@@ -1,0 +1,224 @@
+{
+  "name": "OrderCoffee",
+
+  "description": "Vuics Voice User Interface example to order a coffee.",
+  "locale": "en-US",
+  "childDirected": true,
+  "idleSessionTTLInSeconds": 300,
+  "voiceId": "Joanna",
+
+  "clarificationPrompt": {
+    "maxAttempts": 1,
+    "messages": [{
+      "content": "I can't understand. Please repeat what you said",
+      "contentType": "PlainText"
+    }]
+  },
+  "abortStatement": {
+    "messages": [{
+      "content": "I still don't understand. Sorry me.",
+      "contentType": "PlainText"
+    }]
+  },
+
+  "slotTypes": [{
+    "name": "CoffeeType",
+    "description": "Available coffee types",
+    "enumerationValues": [ {
+      "value": "Espresso"
+    }, {
+      "value": "Americano"
+    }, {
+      "value": "Macchiato"
+    }, {
+      "value": "Cappucino"
+    }, {
+      "value": "Latte"
+    }, {
+      "value": "Frappe"
+    }, {
+      "value": "Mocha"
+    }, {
+      "value": "Black"
+    }, {
+      "value": "Cold"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }, {
+    "name": "CoffeeSizeType",
+    "description": "Available sizes of coffee",
+    "enumerationValues": [ {
+      "value": "small"
+    }, {
+      "value": "medium"
+    }, {
+      "value": "large"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }, {
+    "name": "CoffeeSweetenerType",
+    "description": "Available sugar or sweetener types",
+    "enumerationValues": [ {
+      "value": "plain"
+    }, {
+      "value": "sugar"
+    }, {
+      "value": "brown sugar"
+    }, {
+      "value": "honey"
+    }, {
+      "value": "stevia"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }, {
+    "name": "CoffeeFlavourType",
+    "description": "Available flavours",
+    "enumerationValues": [ {
+      "value": "no flavour"
+    }, {
+      "value": "Vanilla"
+    }, {
+      "value": "Caramel"
+    }, {
+      "value": "Hazelnut"
+    }, {
+      "value": "Toffee"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }],
+
+  "intents": [{
+    "name": "OrderCoffee",
+    "answer": "Great, I ordered you a {Size} size {Sweetener} {Type} coffee.",
+    "conclusionStatement": {
+      "messages": [{
+        "content": "Great, I ordered you a {Size} size {Sweetener} {Type} coffee.",
+        "contentType": "PlainText"
+      }, {
+        "content": "All right, your {Size} size {Type} coffee with {Sweetener} sweetener and {Flavour} flavour is on the way?",
+        "contentType": "PlainText"
+      }],
+      "responseCard": "foo"
+    },
+    "confirmationPrompt": {
+      "maxAttempts": 1,
+      "messages": [{
+        "content": "Should I order your {Size} size {Sweetener} {Type} coffee?",
+        "contentType": "PlainText"
+      }, {
+        "content": "Should I order you {Size} size {Type} coffee with {Sweetener} sweetener and {Flavour} flavour?",
+        "contentType": "PlainText"
+      }]
+    },
+    "description": "Order a coffee from a coffee house.",
+    "fulfillmentActivity": {
+      "type": "ReturnIntent"
+    },
+    "rejectionStatement": {
+      "messages": [{
+        "content": "Ok, I'm cancelling your order.",
+        "contentType": "PlainText"
+      }, {
+        "content": "I cancel your order.",
+        "contentType": "PlainText"
+      }]
+    },
+    "sampleUtterances": [
+      "Order me a coffee.",
+      "Order me a {Type} coffee.",
+      "I want a {Size} size {Type} coffee",
+      "I want a {Type} coffee {Size} size with {Sweetener} sweetener.",
+      "I want a {Type} coffee {Size} size with {Sweetener} sweetener and {Flavour} flavor."
+    ],
+    "slots": [ {
+      "name": "Type",
+      "description": "The type of coffee to order.",
+      "priority": 1,
+      "sampleUtterances": [
+        "Get me a {Type} coffee.",
+        "A {Type} coffee please.",
+        "I'd like a {Type} coffee."
+      ],
+      "slotConstraint": "Required",
+      "slotType": "CoffeeType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "What type of coffee would you like?",
+          "contentType": "PlainText"
+        }, {
+          "content": "Espresso, Americano, Cappucino, Latte, Frappe, Mocha, Black, or Cold coffee?",
+          "contentType": "PlainText"
+        }, {
+          "content": "I can get you an Espresso, Americano, Cappucino, Latte, Frappe, Mocha, Black, or Cold coffee",
+          "contentType": "PlainText"
+        } ]
+      }
+    }, {
+      "name": "Size",
+      "description": "The size of coffee to order.",
+      "priority": 2,
+      "sampleUtterances": [
+        "Give me a {Size} size.",
+        "Make {Size} size.",
+        "I'd like a {Size} size."
+      ],
+      "slotConstraint": "Required",
+      "slotType": "CoffeeSizeType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "What size of coffee would you like?",
+          "contentType": "PlainText"
+        }, {
+          "content": "Small, medium or large size?",
+          "contentType": "PlainText"
+        } ]
+      }
+    }, {
+      "name": "Sweetener",
+      "description": "The type of sweetener to add to the coffee.",
+      "priority": 3,
+      "sampleUtterances": [
+        "Make it with {Sweetener} sweetener.",
+        "I'd like {Sweetener} sweetener."
+      ],
+      "slotConstraint": "Required",
+      "slotType": "CoffeeSweetenerType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "Would you like plain coffee, with sugar or with what sweetener?",
+          "contentType": "PlainText"
+        }, {
+          "content": "Plain, sugar, brown sugar, honey or stevia sweetener?",
+          "contentType": "PlainText"
+        }, {
+          "content": "What sweetener do you want?",
+          "contentType": "PlainText"
+        } ]
+      }
+    }, {
+      "name": "Flavour",
+      "description": "The flavour of the coffee.",
+      "priority": 4,
+      "sampleUtterances": [
+        "Make it {Flavour} flavour.",
+        "I'd like {Flavour} flavour.",
+        "I want {Flavour} flavour."
+      ],
+      "slotConstraint": "Optional",
+      "slotType": "CoffeeFlavourType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "Would you like Vanilla, Caramel, Hazelnut, Toffee flavour or no flavour?",
+          "contentType": "PlainText"
+        }, {
+          "content": "What flavour do you want?",
+          "contentType": "PlainText"
+        } ]
+      }
+    } ]
+  }]
+}

@@ -1,7 +1,7 @@
 {
   "name": "vuics-vui-react-hello-world",
-  "homepage": "https://alphara.github.io/vuics-vui-react",
-  "version": "0.1.0",
+  "homepage": "https://github.com/alphara/vuics-vui-react/tree/master/examples/hello-world#hello-world-example",
+  "version": "0.2.0",
   "license": "ISC",
   "private": true,
   "dependencies": {

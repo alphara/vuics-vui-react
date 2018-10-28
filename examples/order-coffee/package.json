@@ -1,7 +1,7 @@
 {
-  "name": "vuics-vui-wake-word-example",
-  "homepage": "https://alphara.github.io/vuics-vui-react",
-  "version": "0.1.1",
+  "name": "vuics-vui-react-order-coffee",
+  "homepage": "https://github.com/alphara/vuics-vui-react/tree/master/examples/order-coffee#order-coffee-example",
+  "version": "0.2.0",
   "license": "ISC",
   "private": true,
   "dependencies": {

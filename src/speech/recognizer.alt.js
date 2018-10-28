@@ -39,7 +39,7 @@ const listen = ({
 
   recognition = new SpeechRecognition();
 
-  const grammar = '#JSGF V1.0; grammar phrase; public <phrase> = ' + phrases.join(' | ') + ';';
+  const grammar = '#JSGF V1.0; grammar phrase; public <phrase> = ' + phrases.join(' | ') +';';
   var speechRecognitionList = new SpeechGrammarList();
   speechRecognitionList.addFromString(grammar, 1);
   recognition.grammars = speechRecognitionList;

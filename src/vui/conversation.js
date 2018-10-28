@@ -15,16 +15,12 @@ const MESSAGES = Object.freeze({
 const applyDefaults = ({
   silenceDetection = true,
   name = '',
-  authToken = '',
-  apiKey = '',
   contentType = DEFAULT_CONTENT_TYPE,
   userId = DEFAULT_USER_ID,
   accept = DEFAULT_ACCEPT_HEADER_VALUE
 } = {}) => ({
   silenceDetection,
   name,
-  authToken,
-  apiKey,
   contentType,
   userId,
   accept
@@ -59,16 +55,16 @@ class Conversation {
 
     this.config = applyDefaults(config)
 
+    this.onStateChange = onStateChange
+    this.onSuccess = onSuccess
+    this.onError = onError
+    this.onAudioData = onAudioData
+
     if (!this.config.name) {
       this.onError('A Bot name must be provided.')
 
       return
     }
-
-    this.onStateChange = onStateChange
-    this.onSuccess = onSuccess
-    this.onError = onError
-    this.onAudioData = onAudioData
 
     this.onAudioStream = this.onAudioStream.bind(this)
     this.onSilence = this.onSilence.bind(this)
@@ -218,26 +214,14 @@ class Conversation {
     // name, userId, inputText
     // url: `${settings.apiUrl}/vui-server/text`,
 
-    let url = `${settings.apiUrl}/vui-server/content`
-
-    const headers = {}
-
-    if (this.config.authToken) {
-      url = `${settings.apiUrl}/server/content`
-
-      headers['Authorization'] = this.config.authToken
-    } else if (this.config.apiKey) {
-      headers['X-API-key'] = this.config.apiKey;
-    } else {
-      headers['X-API-key'] = settings.apiKey;
-    }
-
     axios({
       method: 'post',
-      url,
+      url: `${settings.apiUrl}/vui-server/content`,
       data,
-      headers
-    }).then(this.onAudioStream).catch((err) => {
+      headers: {
+        'X-API-key': settings.apiKey
+      }
+    }).then(this.onAudioStream).catch(err => {
       this.onError(err)
 
       console.log('sendingConversation error: ', MESSAGES.PASSIVE)

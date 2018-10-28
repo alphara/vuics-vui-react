@@ -23,12 +23,8 @@ export default class Vuics extends Component {
     children: PropTypes.node.isRequired,
 
     name: PropTypes.string.isRequired,
-    authToken: PropTypes.string,
-    apiKey: PropTypes.string,
 
-    onConversationData: PropTypes.func.isRequired,
-
-    intentHandlers: PropTypes.object,
+    intentHandlers: PropTypes.object.isRequired,
     recognizerHandlers: PropTypes.object,
     recognitionCallbacks: PropTypes.object,
 
@@ -387,10 +383,7 @@ export default class Vuics extends Component {
         if (!data.intentName) {
           return
         }
-        console.log(data)
-
         if (
-          this.props.intentHandlers &&
           typeof this.props.intentHandlers[data.intentName] === 'function'
         ) {
           this.props.intentHandlers[data.intentName](data, {
@@ -424,8 +417,6 @@ export default class Vuics extends Component {
         } else {
           console.error('Intent ', data.intentName, ' have no callback attached!')
         }
-
-        this.props.onConversationData(data)
       }
     )
   }
@@ -451,9 +442,7 @@ export default class Vuics extends Component {
 
     this.conversation = new Conversation({
       config: {
-        name: this.props.name,
-        authToken: this.props.authToken,
-        apiKey: this.props.apiKey
+        name: this.props.name
       },
       synthesizer: this.synthesizer,
       onStateChange: this.onConversationStateChange,

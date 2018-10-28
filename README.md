@@ -29,13 +29,11 @@ your website.
 Please do the following steps to integrate VUI into your React.js web application.
 
 1. Sing up on [Vuics.com](https://vuics.com).
-2. Request access to Vuics API by [email](mailto:admin@vuics.com) or on
-[Vuics.com](https://vuics.com).
-3. We will create a Vuics API Key for you.
-4. Integrate [@vuics/vui-react](https://www.npmjs.com/package/@vuics/vui-react)
-component into your website.
-5. Build your voice interface with the [@vuics/cli](https://www.npmjs.com/package/@vuics/cli).
-6. Feel free to ask us any questions. We would love to help with the integration.
+2. Contact us by [email](mailto:admin@vuics.com) or on
+[Vuics.com](https://vuics.com) with request to use Vuics API.
+3. We will create a Vuics API Key and share to you.
+4. Install the library and write the integration code (how? see below).
+5. Feel free to ask us any questions. We would love to help with the integration.
 
 ## Install
 

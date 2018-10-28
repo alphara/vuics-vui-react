@@ -1,0 +1,21 @@
+{
+  "short_name": "vuics-vui-react",
+  "name": "vuics-vui-react",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+  "developer": {
+    "name": "Vuics",
+    "url": "https://vuics.com"
+  },
+  "type": "privileged",
+  "permissions": {
+    "audio-capture": {
+      "description": "Audio capture"
+    },
+    "speech-recognition": {
+      "description": "Speech recognition"
+    }
+  }
+}

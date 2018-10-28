@@ -1,0 +1,332 @@
+{
+  "name": "WebsiteExample",
+
+  "description": "Vuics Example of a website with integrated Voice User Interface.",
+  "locale": "en-US",
+  "childDirected": true,
+  "idleSessionTTLInSeconds": 300,
+  "voiceId": "Joanna",
+
+  "clarificationPrompt": {
+    "maxAttempts": 1,
+    "messages": [{
+      "content": "I can't understand. Please repeat what you said",
+      "contentType": "PlainText"
+    }]
+  },
+  "abortStatement": {
+    "messages": [{
+      "content": "I still don't understand. Sorry me.",
+      "contentType": "PlainText"
+    }]
+  },
+
+  "intents": [{
+    "name": "GetStarted",
+    "description": "Get Started Intent",
+    "sampleUtterances": [
+      "Get started",
+      "Start",
+      "Begin",
+      "Go to start",
+      "Navigate to start"
+    ],
+    "answer": "Let's get started."
+  }, {
+    "name": "About",
+    "description": "About Intent",
+    "sampleUtterances": [
+      "About",
+      "Show about",
+      "Tell me about you",
+      "Go to about",
+      "Navigate to about"
+    ],
+    "answer": "I'm excited to tell you about us"
+  }, {
+    "name": "Form",
+    "description": "Form Intent",
+    "sampleUtterances": [
+      "Form",
+      "Open form",
+      "Show a form",
+      "Go to form",
+      "Navigate to form"
+    ],
+    "answer": "Let's fill out the form."
+  }, {
+    "name": "Code",
+    "description": "Code Intent",
+    "sampleUtterances": [
+      "Code",
+      "Show me code",
+      "Open code",
+      "Go to code section",
+      "Navigate to code section"
+    ],
+    "answer": "You could try to build the code on Vuics platform."
+  }, {
+    "name": "Login",
+    "description": "Login and Signup Intent",
+    "sampleUtterances": [
+      "Login",
+      "Log in",
+      "Sign in",
+      "Sign up",
+      "Open login",
+      "Open my account",
+      "Go to account",
+      "Register account"
+    ],
+    "answer": "You're welcome!"
+  }, {
+    "name": "FillForm",
+    "answer": "Great, I submitted a form with first name {FirstName}, last name {LastName}, {Gender} gender, {Size} size, about text is {About}, and {Agree} with terms and conditions.",
+    "conclusionStatement": {
+      "messages": [{
+        "content": "Great, I submit a form with first name {FirstName}, last name {LastName}, {Gender} gender, {Size} size, about text is {About}, and {Agree} with terms and conditions.",
+        "contentType": "PlainText"
+      }, {
+        "content": "All right, the form with {FirstName}, {LastName}, {Gender}, {Size}, {About}, {Agree} has been sent.",
+        "contentType": "PlainText"
+      }],
+      "responseCard": "foo"
+    },
+    "confirmationPrompt": {
+      "maxAttempts": 1,
+      "messages": [{
+        "content": "Should I submit a form with first name {FirstName}, last name {LastName}, {Gender} gender, {Size} size, about text is {About}, and {Agree} with terms and conditions?",
+        "contentType": "PlainText"
+      }, {
+        "content": "Should I send a form with {FirstName}, {LastName}, {Gender}, {Size}, {About}, {Agree}?",
+        "contentType": "PlainText"
+      }]
+    },
+    "description": "Fill a form to submit.",
+    "fulfillmentActivity": {
+      "type": "ReturnIntent"
+    },
+    "rejectionStatement": {
+      "messages": [{
+        "content": "Ok, I'm cancelling your form.",
+        "contentType": "PlainText"
+      }, {
+        "content": "I cancel your form.",
+        "contentType": "PlainText"
+      }]
+    },
+    "sampleUtterances": [
+      "Fill out the form",
+      "Fill the form",
+      "I want submit a form",
+      "I could send a form"
+    ],
+    "slots": [ {
+      "name": "FirstName",
+      "description": "First name",
+      "priority": 1,
+      "sampleUtterances": [
+        "My name is {FirstName}",
+        "My first name is {FirstName}",
+        "My given name is {FirstName}",
+        "I am {FirstName}",
+        "Input my first name as {FirstName}"
+      ],
+      "slotConstraint": "Required",
+      "slotType": "FirstNameType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "What is your first name?",
+          "contentType": "PlainText"
+        }, {
+          "content": "What is your given name?",
+          "contentType": "PlainText"
+        }, {
+          "content": "What is your name?",
+          "contentType": "PlainText"
+        } ]
+      }
+    }, {
+      "name": "LastName",
+      "description": "Last name",
+      "priority": 2,
+      "sampleUtterances": [
+        "My last name is {LastName}",
+        "My family name is {LastName}",
+        "My surname is {LastName}"
+      ],
+      "slotConstraint": "Required",
+      "slotType": "LastNameType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "What is your last name?",
+          "contentType": "PlainText"
+        }, {
+          "content": "What is your family name?",
+          "contentType": "PlainText"
+        }, {
+          "content": "What is your surname?",
+          "contentType": "PlainText"
+        } ]
+      }
+    }, {
+      "name": "Gender",
+      "description": "Male or female gender.",
+      "priority": 3,
+      "sampleUtterances": [
+        "My gender is {Gender}",
+        "I'm {Gender}"
+      ],
+      "slotConstraint": "Required",
+      "slotType": "GenderType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "What is your gender?",
+          "contentType": "PlainText"
+        }, {
+          "content": "Are you male of female?",
+          "contentType": "PlainText"
+        } ]
+      }
+    }, {
+      "name": "Size",
+      "description": "Size type",
+      "priority": 4,
+      "sampleUtterances": [
+        "Set {Size} size",
+        "Select {Size}"
+      ],
+      "slotConstraint": "Required",
+      "slotType": "SizeType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "What size would you like to select?",
+          "contentType": "PlainText"
+        }, {
+          "content": "Is it small, medium or large size?",
+          "contentType": "PlainText"
+        } ]
+      }
+    }, {
+      "name": "About",
+      "description": "About text",
+      "priority": 5,
+      "sampleUtterances": [
+        "About me is {About}",
+        "This is about me {About}"
+      ],
+      "slotConstraint": "Required",
+      "slotType": "AboutType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "What would you like to tell about yourself?",
+          "contentType": "PlainText"
+        }, {
+          "content": "What is about you?",
+          "contentType": "PlainText"
+        } ]
+      }
+    }, {
+      "name": "Agree",
+      "description": "Agreeing with terms and conditions",
+      "priority": 6,
+      "sampleUtterances": [
+        "I {Agree} with terms and conditions",
+        "{Agree} with terms",
+        "{Agree} with conditions"
+      ],
+      "slotConstraint": "Required",
+      "slotType": "AgreeType",
+      "valueElicitationPrompt": {
+        "maxAttempts": 1,
+        "messages": [ {
+          "content": "Do you agree with terms and conditions?",
+          "contentType": "PlainText"
+        }, {
+          "content": "Do you agree?",
+          "contentType": "PlainText"
+        }, {
+          "content": "What is your decision about terms and conditions?",
+          "contentType": "PlainText"
+        } ]
+      }
+    } ]
+  }],
+
+  "slotTypes": [{
+    "name": "FirstNameType",
+    "description": "Possible first names",
+    "enumerationValues": [ {
+      "value": "Artem"
+    }, {
+      "value": "Alex"
+    }, {
+      "value": "John"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }, {
+    "name": "LastNameType",
+    "description": "Possible last names",
+    "enumerationValues": [ {
+      "value": "Arakcheev"
+    }, {
+      "value": "Lyakhov"
+    }, {
+      "value": "Doe"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }, {
+    "name": "GenderType",
+    "description": "Male of female type",
+    "enumerationValues": [ {
+      "value": "male"
+    }, {
+      "value": "female"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }, {
+    "name": "SizeType",
+    "description": "Available sizes",
+    "enumerationValues": [ {
+      "value": "small"
+    }, {
+      "value": "medium"
+    }, {
+      "value": "large"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }, {
+    "name": "AboutType",
+    "description": "Possible about text",
+    "enumerationValues": [ {
+      "value": "nothing"
+    }, {
+      "value": "something"
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }, {
+    "name": "AgreeType",
+    "description": "Available sizes",
+    "enumerationValues": [ {
+      "value": "yes",
+      "synonyms": [
+        "agree",
+        "confirm",
+        "approve"
+      ]
+    }, {
+      "value": "no",
+      "synonyms": [
+        "disagree",
+        "cancel",
+        "reject"
+      ]
+    } ],
+    "valueSelectionStrategy": "ORIGINAL_VALUE"
+  }]
+}

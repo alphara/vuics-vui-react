@@ -1,7 +1,7 @@
 {
   "name": "vuics-vui-react-website",
-  "homepage": "https://github.com/alphara/vuics-vui-react/tree/master/examples/website#website-example",
-  "version": "0.1.0",
+  "homepage": "https://website.vuics.com",
+  "version": "0.1.1",
   "license": "ISC",
   "private": true,
   "dependencies": {

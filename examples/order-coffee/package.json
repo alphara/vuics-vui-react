@@ -1,7 +1,7 @@
 {
   "name": "vuics-vui-react-order-coffee",
-  "homepage": "https://github.com/alphara/vuics-vui-react/tree/master/examples/order-coffee#order-coffee-example",
-  "version": "0.2.0",
+  "homepage": "https://ordercoffee.vuics.com",
+  "version": "0.2.1",
   "license": "ISC",
   "private": true,
   "dependencies": {
